@@ -13,12 +13,12 @@ It is based on the CodeIgniter 4.x framework.
 
 ### Installing
 
-1. Download [our latest release](https://github.com/OrifInformatique/plafor/tree/Release-4.0)
+1. Download [our latest release](https://github.com/OrifInformatique/plafor/releases/tag/v4.0.1)
 2. Unzip your download in your project's directory (in your local PHP server)
-3. Rename env file to .env and adapt it for your server's parameters
-4. To init the project navigate to your server address, like ``http://localhost/plafor/public``
-and add migration at the end of url
-   ``http://localhost/plafor/public/migration``
+3. Create a new empty database ``plafor`` (using phpMyAdmin)
+4. Rename env file to .env and adapt it for your server's parameters (environment and database connection)
+5. To initialize the database (migrations and seeds), navigate to this URL ``http://localhost/plafor/public/migration`` (This step requires a password. Ask for it to an administrator.)
+
 ## Built With
 
 * [CodeIgniter 4.x](https://www.codeigniter.com/) - PHP framework
