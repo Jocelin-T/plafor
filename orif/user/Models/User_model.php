@@ -42,10 +42,7 @@ class User_model extends \CodeIgniter\Model{
         }
         else{
             return false;
-
         }
-
-
     }
 
     /**
@@ -73,26 +70,23 @@ class User_model extends \CodeIgniter\Model{
      */
     public static function get_access_level($userID){
         return User_type_model::getInstance()->getWhere(['id'=>User_model::getInstance()->find($userID)['fk_user_type']])->getRow()->access_level;
-
     }
 
     /**
      * @return array the list of apprentices
      */
     public static function getApprentices(bool $withDeleted=false){
-
         if ($withDeleted)
             return User_model::getInstance()->where('fk_user_type',User_type_model::getInstance()->where('access_level', config("\User\Config\UserConfig")->access_level_apprentice)->first()['id'])->withDeleted()->findAll();
         return User_model::getInstance()->where('fk_user_type',User_type_model::getInstance()->where('name','Apprenti')->first()['id'])->findAll();
-
     }
 
     /**
      * @return array the list of trainers
      */
-    public static function getTrainers(bool $withDelted=false){
+    public static function getTrainers(bool $withDeleted=false){
         $indexedTrainers = array();
-        if ($withDelted) {
+        if ($withDeleted) {
             $trainers = User_model::getInstance()->where('fk_user_type',User_type_model::getInstance()->where('name','Formateur')->first()['id'])->withDeleted()->findAll();
             foreach ($trainers as $trainer) {
                 $indexedTrainers[$trainer['id']] = $trainer;
@@ -104,8 +98,5 @@ class User_model extends \CodeIgniter\Model{
             $indexedTrainers[$trainer['id']] = $trainer;
         }
         return $indexedTrainers;
-
     }
-
-
 }

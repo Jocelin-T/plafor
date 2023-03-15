@@ -12,18 +12,27 @@ use CodeIgniter\Test\CIUnitTestCase;
 
 class User_modelTest extends CIUnitTestCase
 {
+    /**
+     * Asserts that getInstance method of User_model returns an instance of User_model
+     */
     public function testgetUser_modelInstance()
     {
         $userModel = User_model::getInstance();
         $this->assertTrue($userModel instanceof User_model);
     }
 
+    /**
+     * Asserts that getInstance method of User_model does not return an instance of User_type_model
+     */
     public function testgetUser_type_modelInstance()
     {
         $userModel = User_model::getInstance();
         $this->assertFalse($userModel instanceof User_type_model);
     }
 
+    /**
+     * Tests that the check_password_name correctly checks the user password using the username
+     */
     public function testcheck_password_name()
     {
         // Insert user into database
@@ -53,6 +62,9 @@ class User_modelTest extends CIUnitTestCase
         User_model::getInstance()->delete($userDb['id'], TRUE);
     }
 
+    /**
+     * Tests that the check_password_email correctly checks the user password using the user email
+     */
     public function testcheck_password_email()
     {
         // Insert user into database
