@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * Unit test User_modelTest 
+ *
+ * @author      Orif (CaLa)
+ * @link        https://github.com/OrifInformatique
+ * @copyright   Copyright (c), Orif (https://www.orif.ch)
+ */
 namespace User\Models;
 
 use CodeIgniter\Test\CIUnitTestCase;
