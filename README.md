@@ -19,6 +19,11 @@ It is based on the CodeIgniter 4.x framework.
 4. Rename env file to .env and adapt it for your server's parameters (environment and database connection)
 5. To initialize the database (migrations and seeds), navigate to this URL ``http://localhost/plafor/public/migration`` (This step requires a password. Ask for it to an administrator.)
 
+### Unit Testing
+1. Download and install [Composer](https://getcomposer.org/download/)
+2. From the project root (the directory that contains the application and system directories) type the following from the command line: ``composer require --dev phpunit/phpunit``
+3. From the project root run unit tests typing the following from the command line : ``vendor\bin\phpunit``
+
 ## Built With
 
 * [CodeIgniter 4.x](https://www.codeigniter.com/) - PHP framework
