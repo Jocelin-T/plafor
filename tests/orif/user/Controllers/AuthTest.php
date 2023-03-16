@@ -24,6 +24,10 @@
         $result = $this->controller(Auth::class)
         ->execute('login');
 
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertSeeElement('#username');
@@ -31,10 +35,8 @@
         $result->assertSeeElement('#btn_cancel');
         $result->assertSeeElement('#btn_login');
         $result->assertDontSeeElement('#fake_element');
-        
         $result->assertSeeInField('username', '');
         $result->assertSeeInField('password', '');
-
         $result->assertSeeLink('Se connecter');
     }
 }
