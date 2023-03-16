@@ -30,7 +30,6 @@ class Auth extends BaseController {
 
         // Load required services
         $this->validation = \Config\Services::validation();
-
     }
 
     /**
