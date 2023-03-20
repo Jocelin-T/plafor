@@ -136,5 +136,4 @@
         $result->assertSeeElement('.btn btn-default');
         $result->assertSeeElement('.btn btn-primary');
     }
-
 }
