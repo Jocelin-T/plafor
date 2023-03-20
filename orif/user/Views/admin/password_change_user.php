@@ -50,7 +50,7 @@ $validation=\Config\Services::validation();
             <div class="form-group">
                 <?= form_label(lang('user_lang.field_password_confirm'), 'user_password_again', ['class' => 'form-label']); ?>
                 <?= form_password('user_password_again', '', [
-                    'class' => 'form-control', 'id' => 'user_password_new',
+                    'class' => 'form-control', 'id' => 'user_password_again',
                     'maxlength' => config('\User\Config\UserConfig')->password_max_length
                 ]); ?>
             </div>

@@ -34,7 +34,6 @@ class Admin extends BaseController
 
         //get db instance
         $this->db = \CodeIgniter\Database\Config::connect();
-
     }
 
     /**
