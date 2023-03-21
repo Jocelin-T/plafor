@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Plafor\Models;
-
 
 use CodeIgniter\Database\ConnectionInterface;
 use CodeIgniter\Validation\ValidationInterface;
@@ -57,22 +55,26 @@ class ObjectiveModel extends \CodeIgniter\Model
 
     /**
      * @param $objectiveId
+     * @param $userCourseId
      * @return array
      */
-    public static function getAcquisitionStatus($objectiveId,$userCourseId=null){
-        if ($userCourseId!=null){
-            return AcquisitionStatusModel::getInstance()->where('fk_objective',$objectiveId)->where('fk_user_course',$userCourseId)->first();
+    public static function getAcquisitionStatus($objectiveId, $userCourseId = null){
+        if ($userCourseId != null) {
+            return AcquisitionStatusModel::getInstance()->where('fk_objective', $objectiveId)->where('fk_user_course', $userCourseId)->first();
         }
-        return AcquisitionStatusModel::getInstance()->where('fk_objective',$objectiveId)->findAll();
+        return AcquisitionStatusModel::getInstance()->where('fk_objective', $objectiveId)->findAll();
     }
 
-    public static function getObjectives($with_archived=false, $operational_competence_id=0) {
-        if($operational_competence_id==0) {
+    /**
+     * @param $with_archived
+     * @param $operational_competence_id
+     * @return array
+     */
+    public static function getObjectives($with_archived = false, $operational_competence_id = 0) {
+        if($operational_competence_id == 0) {
             return ObjectiveModel::getInstance()->withDeleted($with_archived)->findAll();
         } else {
             return ObjectiveModel::getInstance()->where('fk_operational_competence', $operational_competence_id)->withDeleted($with_archived)->findAll();
         }
     }
-
-
 }
