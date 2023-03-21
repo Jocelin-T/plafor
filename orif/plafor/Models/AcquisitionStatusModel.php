@@ -51,7 +51,7 @@ class AcquisitionStatusModel extends Model{
     }
 
     /**
-     * @param $fkAcquisitionLevelId /the id of the fk_aquisition_level
+     * @param $fkAcquisitionLevelId /the id of the fk_acquisition_level
      * @return array|null
      */
     public static function getAcquisitionLevel($fkAcquisitionLevelId){
