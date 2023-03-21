@@ -46,9 +46,7 @@ class CompetenceDomainModel extends Model{
      * @return array|null
      */
     public static function getCoursePlan($fkCoursePlanId){
-
         return CoursePlanModel::getInstance()->withDeleted(true)->find($fkCoursePlanId);
-
     }
 
     /**
@@ -59,8 +57,13 @@ class CompetenceDomainModel extends Model{
         return OperationalCompetenceModel::getInstance()->withDeleted($withArchived)->where('fk_competence_domain',$competenceDomainId)->findAll();
     }
 
+    /**
+     * @param $with_archived
+     * @param $course_plan_id
+     * @return array|null
+     */
     public static function getCompetenceDomains($with_archived = false, $course_plan_id = 0) {
-        if($course_plan_id==0) {
+        if ($course_plan_id == 0) {
             return CompetenceDomainModel::getInstance()->withDeleted($with_archived)->findall();
         } else {
             return CompetenceDomainModel::getInstance()->where('fk_course_plan', $course_plan_id)->withDeleted($with_archived)->findall();
