@@ -33,29 +33,29 @@ class AcquisitionStatusModel extends Model{
         }
         return AcquisitionStatusModel::$acquisitionStatusModel;
     }
+    
     /**
      * @param $fkObjectiveId /the id of the fk_objective
      * @return array|null
      */
     public static function getObjective($fkObjectiveId){
         return ObjectiveModel::getInstance()->withDeleted()->find($fkObjectiveId);
-
     }
+
     /**
      * @param $fkUserCourseId /the id of the fk_user_course
      * @return array|null
      */
     public static function getUserCourse($fkUserCourseId){
         return UserCourseModel::getInstance()->find($fkUserCourseId);
-
     }
+
     /**
      * @param $fkAcquisitionLevelId /the id of the fk_aquisition_level
      * @return array|null
      */
     public static function getAcquisitionLevel($fkAcquisitionLevelId){
         return AcquisitionLevelModel::getInstance()->find($fkAcquisitionLevelId);
-
     }
 }
 
