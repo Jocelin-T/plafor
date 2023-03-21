@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Plafor\Models;
-
 
 use CodeIgniter\Database\ConnectionInterface;
 use CodeIgniter\Validation\ValidationInterface;
@@ -70,6 +68,11 @@ class OperationalCompetenceModel extends \CodeIgniter\Model
         return ObjectiveModel::getInstance()->where('fk_operational_competence',$operationalCompetenceId)->findAll();
     }
 
+    /**
+     * @param $with_archived
+     * @param $competence_domain_id
+     * @return array
+     */
     public static function getOperationalCompetences($with_archived = false, $competence_domain_id = 0) { 
         if($competence_domain_id == 0) {
             return OperationalCompetenceModel::getInstance()->withDeleted($with_archived)->findall();
@@ -77,5 +80,4 @@ class OperationalCompetenceModel extends \CodeIgniter\Model
             return OperationalCompetenceModel::getInstance()->where('fk_competence_domain', $competence_domain_id)->withDeleted($with_archived)->findall();
         }
     }
-
 }
