@@ -58,7 +58,7 @@ class CoursePlanModel extends Model{
      * @return array
      */
     public static function getCompetenceDomains($coursePlanId){
-        return CompetenceDomainModel::getInstance()->where('fk_course_plan',$coursePlanId)->findAll();
+        return CompetenceDomainModel::getInstance()->where('fk_course_plan', $coursePlanId)->findAll();
     }
 
     /**
@@ -66,7 +66,7 @@ class CoursePlanModel extends Model{
      * @return array
      */
     public static function getUserCourses($coursePlanId){
-        return UserCourseModel::getInstance()->where('fk_course_plan',$coursePlanId)->findAll();
+        return UserCourseModel::getInstance()->where('fk_course_plan', $coursePlanId)->findAll();
     }
     /**
      * @param $userId //is the apprentice id
@@ -74,9 +74,7 @@ class CoursePlanModel extends Model{
      *                               Plan contained compdom and opcomp
      */
     public function getCoursePlanProgress($userId){
-        $competenceDomainsAssociated=[];
-        $operationalCompetencesassociated=[];
-        $coursePlanAssociated=[];
+        
         function getCoursePlansDatas($userid){
             $coursplans=[];
             foreach (UserCourseModel::getInstance()->where('fk_user',$userid)->findAll() as $userCourse){
@@ -94,6 +92,7 @@ class CoursePlanModel extends Model{
                 }
             return $indexedCompetenceDomains;
         }
+
         function getOperationalCompetencesDatas($competenceDomainId){
             $operationalCompetences=[];
             $indexedOperationalCompetences=[];
@@ -103,24 +102,26 @@ class CoursePlanModel extends Model{
             }
             return $indexedOperationalCompetences;
         }
+
         function getObjectivesDatas($opCompId,$userCourse){
             $intermediateArray=[];
 
-                    foreach (ObjectiveModel::getObjectives(false,$opCompId) as $objective){
-
-                        ObjectiveModel::getAcquisitionStatus($objective['id'],$userCourse['id'])['fk_acquisition_level'];
-                        $objective['fk_acquisition_level']=ObjectiveModel::getAcquisitionStatus($objective['id'],$userCourse['id'])['fk_acquisition_level'];
-                        $intermediateArray[]=$objective;
-                    }
-                    $objectives=$intermediateArray;
+            foreach (ObjectiveModel::getObjectives(false,$opCompId) as $objective){
+                ObjectiveModel::getAcquisitionStatus($objective['id'],$userCourse['id'])['fk_acquisition_level'];
+                $objective['fk_acquisition_level']=ObjectiveModel::getAcquisitionStatus($objective['id'],$userCourse['id'])['fk_acquisition_level'];
+                $intermediateArray[]=$objective;
+            }
+            $objectives=$intermediateArray;
 
             return $objectives;
         }
+
         if (!isset($userId)) {
             return null;
         }
+
         $coursePlans=getCoursePlansDatas($userId);
-        foreach ($coursePlans as $coursePlan){
+        foreach ($coursePlans as $coursePlan) {
             $coursePlan['competenceDomains']=getCompetenceDomainsDatas($coursePlan['id']);
 
             foreach ($coursePlan['competenceDomains'] as $competenceDomain){
@@ -137,16 +138,9 @@ class CoursePlanModel extends Model{
                 $coursePlan['competenceDomains'][$competenceDomain['id']]= $competenceDomain;
             }
             $coursePlans[$coursePlan['id']]=$coursePlan;
-            }
+        }
 
         return $coursePlans;
-
-
-
-
-
-
-
     }
 }
 

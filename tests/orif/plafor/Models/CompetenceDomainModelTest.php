@@ -61,7 +61,7 @@ class CompetenceDomainModelTest extends CIUnitTestCase
      */
     public function testgetCompetenceDomains()
     {
-        // Gets the operational competences with the course plan id 1
+        // Gets the competence domains with the course plan id 1
         $competenceDomains = CompetenceDomainModel::getCompetenceDomains(false, 1);
 
         // Assertions
