@@ -1,4 +1,5 @@
 <?php
+
 namespace Plafor\Models;
 
 use CodeIgniter\Database\ConnectionInterface;

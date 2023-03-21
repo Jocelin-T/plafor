@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Plafor\Models;
-
 
 use CodeIgniter\Database\ConnectionInterface;
 use CodeIgniter\Validation\ValidationInterface;

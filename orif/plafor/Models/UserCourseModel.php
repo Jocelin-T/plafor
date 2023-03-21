@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Plafor\Models;
-
 
 use CodeIgniter\Database\ConnectionInterface;
 use CodeIgniter\Validation\ValidationInterface;
@@ -74,7 +72,4 @@ class UserCourseModel extends \CodeIgniter\Model
     public static function getAcquisitionStatus($userCourseId){
         return AcquisitionStatusModel::getInstance()->where('fk_user_course',$userCourseId)->findAll();
     }
-
-
-
 }

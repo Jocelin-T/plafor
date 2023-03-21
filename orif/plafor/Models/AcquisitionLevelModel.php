@@ -1,6 +1,7 @@
 <?php 
 
 namespace Plafor\Models;
+
 use CodeIgniter\Model;
 use phpDocumentor\Reflection\Types\Void_;
 
