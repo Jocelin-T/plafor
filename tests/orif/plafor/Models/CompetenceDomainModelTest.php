@@ -72,5 +72,4 @@ class CompetenceDomainModelTest extends CIUnitTestCase
             $this->assertEquals($competenceDomain['fk_course_plan'], 1);
         }
     }
-
 }
