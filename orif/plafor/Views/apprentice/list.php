@@ -47,7 +47,7 @@ helper('form');
         <?php foreach ($apprentices as $apprentice) { ?>
             <tr>
                 <td>
-                    <a href="<?= base_url('plafor/apprentice/view_apprentice/' . $apprentice['id']); ?>"><?= $apprentice['username']; ?>
+                    <a href="<?= base_url('plafor/apprentice/view_apprentice/' . $apprentice['id']); ?>"><?= $apprentice['username']; ?></a>
                 </td>
                 <td><a href="<?= base_url('plafor/courseplan/list_course_plan/' . $apprentice['id']) ?>"><?php
                         $linkedCourses = "";
