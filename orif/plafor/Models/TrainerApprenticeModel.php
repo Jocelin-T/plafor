@@ -47,8 +47,8 @@ class TrainerApprenticeModel extends \CodeIgniter\Model
      */
     public static function getApprentice($fkApprenticeId){
         return User_model::getInstance()->find($fkApprenticeId);
-
     }
+
     /**
      * @param $fkTrainerId
      * @return array
