@@ -23,6 +23,6 @@ class UserCourseStatusModel extends \CodeIgniter\Model
      * @return array
      */
     public static function getUserCourses($userCourseStatusId){
-        return UserCourseModel::getInstance()->where('fk_status',$userCourseStatusId)->findAll();
+        return UserCourseModel::getInstance()->where('fk_status', $userCourseStatusId)->findAll();
     }
 }

@@ -17,7 +17,7 @@ class UserCourseModelTest extends CIUnitTestCase
     /**
      * Asserts that getInstance method of UserCourseModel returns an instance of UserCourseModel
      */
-    public function testgetTUserCourseModelInstance()
+    public function testgetUserCourseModelInstance()
     {
         $userCourseModel = UserCourseModel::getInstance();
         $this->assertTrue($userCourseModel instanceof UserCourseModel);
