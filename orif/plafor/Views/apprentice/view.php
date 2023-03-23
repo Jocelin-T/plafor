@@ -79,7 +79,6 @@
                     <td class="user-course-details-begin-date"><?=isset($userCourseMax)?$userCourseMax['date_begin']:null?></td>
                     <td class="user-course-details-end-date"><?=isset($userCourseMax)?$userCourseMax['date_end']:null?></td>
                     <td class="user-course-details-status"><?=isset($userCourseMax)?$user_course_status[$userCourseMax['fk_status']]['name']:null?></td>
-
                 </tr>
                 </tbody>
             </table>

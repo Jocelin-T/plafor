@@ -54,7 +54,9 @@ class Apprentice extends \App\Controllers\BaseController
         }
     }
 
-    
+    /**
+     * Display the list of apprentices
+     */
     public function list_apprentice($withDeleted=0)
     {
         $trainer_id = $this->request->getGet('trainer_id');
@@ -87,7 +89,6 @@ class Apprentice extends \App\Controllers\BaseController
             $courses = UserCourseModel::getInstance()->findall();
         }
         
-        
         $output = array(
             'title' => lang('plafor_lang.title_list_apprentice'),
             'trainer_id' => $trainer_id,
@@ -105,7 +106,7 @@ class Apprentice extends \App\Controllers\BaseController
     {
         $apprentice = User_model::getInstance()->find($apprentice_id);
         
-        if(is_null($apprentice) || $apprentice['fk_user_type'] != User_type_model::getInstance()->where('name',lang('plafor_lang.title_apprentice'))->first()['id']){
+        if(is_null($apprentice_id) || $apprentice['fk_user_type'] != User_type_model::getInstance()->where('name',lang('plafor_lang.title_apprentice'))->first()['id']){
             return redirect()->to(base_url("/plafor/apprentice/list_apprentice"));
         }
         $user_courses=[];
@@ -150,7 +151,7 @@ class Apprentice extends \App\Controllers\BaseController
      *
      * @param int (SQL PRIMARY KEY) $id_user_course
      */
-    public function save_user_course($id_apprentice = null,$id_user_course = 0){
+    public function save_user_course($id_apprentice = null, $id_user_course = 0){
         if ($this->session->get('user_access')>=config('\User\Config\UserConfig')->access_lvl_trainer) {
             $apprentice = User_model::getInstance()->find($id_apprentice);
             $user_course = UserCourseModel::getInstance()->find($id_user_course);
@@ -248,7 +249,7 @@ class Apprentice extends \App\Controllers\BaseController
         $apprentice = User_model::getInstance()->find($id_apprentice);
 
         if($_SESSION['user_access'] < config('\User\Config\UserConfig')->access_lvl_trainer
-            || $apprentice == null
+            || $id_apprentice == null
             || $apprentice['fk_user_type'] != User_type_model::getInstance()->
             where('name',lang('plafor_lang.title_apprentice'))->first()['id']){
             return redirect()->to(base_url());
@@ -350,14 +351,15 @@ class Apprentice extends \App\Controllers\BaseController
      * @param int $acquisition_status_id = ID of the acquisition status to view
      * @return void
      */
-    public function view_acquisition_status($acquisition_status_id = null){
-        $acquisition_status = AcquisitionStatusModel::getInstance()->find($acquisition_status_id);
-        $objective=AcquisitionStatusModel::getObjective($acquisition_status['fk_objective']);
-        $acquisition_level=AcquisitionStatusModel::getAcquisitionLevel($acquisition_status['fk_acquisition_level']);
-        if($acquisition_status == null){
+    public function view_acquisition_status($acquisition_status_id = null) {
+        if ($acquisition_status_id == null) 
+        {
             return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
         }
 
+        $acquisition_status = AcquisitionStatusModel::getInstance()->find($acquisition_status_id);
+        $objective=AcquisitionStatusModel::getObjective($acquisition_status['fk_objective']);
+        $acquisition_level=AcquisitionStatusModel::getAcquisitionLevel($acquisition_status['fk_acquisition_level']);
         $comments = CommentModel::getInstance()->where('fk_acquisition_status',$acquisition_status_id)->findAll();
         $trainers = User_model::getTrainers();
         $output = array(
