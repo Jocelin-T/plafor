@@ -156,10 +156,10 @@
         $result->assertSee('Liste des apprentis', 'h1');
         $result->assertSeeLink('ApprentiDev');
         $result->assertSeeLink(' Informaticien/-ne CFC Développement d\'applications');    
-        $result->assertDontSeeLink('ApprentiSysteme');
-        $result->assertDontSeeLink(' Informaticien/-ne CFC Technique des systèmes');
-        $result->assertDontSeeLink('ApprentiOperateur');
-        $result->assertDontSeeLink(' Opératrice en informatique / Opérateur en informatique CFC');
+        $result->assertDontSee('ApprentiSysteme', 'a');
+        $result->assertDontSee(' Informaticien/-ne CFC Technique des systèmes', 'a');
+        $result->assertDontSee('ApprentiOperateur', 'a');
+        $result->assertDontSee(' Opératrice en informatique / Opérateur en informatique CFC', 'a');
     }
 
     /**
@@ -342,6 +342,7 @@
         $result->assertSeeInField('date_begin', '2020-07-09');
         $result->assertSeeInField('date_end', '0000-00-00');
         $result->assertSeeLink('Annuler');
+        $result->assertSeeInField('save', 'Enregistrer');
     }
 
     /**
@@ -437,6 +438,7 @@
         $result->assertSee('FormateurSysteme', 'option');
         $result->assertSee('FormateurOperateur', 'option');
         $result->assertSeeLink('Annuler');
+        $result->assertSeeInField('save', 'Enregistrer');
     }
 
     /**
@@ -469,6 +471,7 @@
         $result->assertSee('FormateurSysteme', 'option');
         $result->assertSee('FormateurOperateur', 'option');
         $result->assertSeeLink('Annuler');
+        $result->assertSeeInField('save', 'Enregistrer');
     }
 
     /**
@@ -523,11 +526,11 @@
     }
 
     /**
-     * Asserts that the view_acquisition_status redirects to the list_apprentice view when no status id is provided
+     * Asserts that the view_acquisition_status page redirects to the list_apprentice view when no status id is provided
      */
     public function testview_acquisition_statusWithoutStatusId() 
     {
-        // Execute save_apprentice_link method of Apprentice class
+        // Execute view_acquisition_status method of Apprentice class
         $result = $this->controller(Apprentice::class)
         ->execute('view_acquisition_status');
 
@@ -541,14 +544,14 @@
     }
 
     /**
-     * Asserts that the view_acquisition_status redirects to the list_apprentice view when a status id is provided (apprentice session)
+     * Asserts that the view_acquisition_status page is loaded correctly when a status id is provided (apprentice session)
      */
     public function testview_acquisition_statusWithStatusIdWithApprenticeSession() 
     {
         // Initialize session
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_guest;
 
-        // Execute save_apprentice_link method of Apprentice class
+        // Execute view_acquisition_status method of Apprentice class
         $result = $this->controller(Apprentice::class)
         ->execute('view_acquisition_status', 1);
 
@@ -567,9 +570,252 @@
         $result->assertSeeLink('4');
         $result->assertSee('Niveau d\'acquisition', 'p');
         $result->assertSee('Non expliqué', 'p');
-        $result->assertDonttSeeLink('Ajouter un commentaire');
+        $result->assertDontSee('Ajouter un commentaire', 'a');
+        $result->assertSee('Commentaire', 'th');
+        $result->assertSee('Créateur du commentaire', 'th');
+        $result->assertSee('Date de création du commentaire', 'th');
+    }
 
-        //TODO
+    /**
+     * Asserts that the view_acquisition_status page is loaded correctly when a status id is provided (trainer session)
+     */
+    public function testview_acquisition_statusWithStatusIdWithTrainerSession() 
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+
+        // Execute view_acquisition_status method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('view_acquisition_status', 1);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Détail du statut d\'acquisition', 'p');
+        $result->assertSee('Symboles de l\'objectif', 'p');
+        $result->asserttSeeLink('A.1.1');
+        $result->assertSee('Nom de l\'objectif', 'p');
+        $result->asserttSeeLink('Enregistrer les besoins et discuter les solutions possibles, s’entretenir avec le client/supérieur sur les restrictions des exigences');
+        $result->assertSee('Taxonomie de l\'objectif', 'p');
+        $result->assertSeeLink('4');
+        $result->assertSee('Niveau d\'acquisition', 'p');
+        $result->assertSee('Non expliqué', 'p');
+        $result->assertSeeLink('Ajouter un commentaire');
+        $result->assertSee('Commentaire', 'th');
+        $result->assertSee('Créateur du commentaire', 'th');
+        $result->assertSee('Date de création du commentaire', 'th');
+    }
+
+    /**
+     * Asserts that the save_acquisition_status page redirects to the list_apprentice view when no status id is provided (no session)
+     */
+    public function testsave_acquisition_statusWithoutStatusIdWithoutSession() 
+    {
+        // Execute save_acquisition_status method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('save_acquisition_status');
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/list_apprentice'));
+    }
+
+    /**
+     * Asserts that the save_acquisition_status page redirects to the list_apprentice view when a status id is provided (system apprentice session)
+     */
+    public function testsave_acquisition_statusWithStatusIdWithSystemApprenticeSession() 
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_guest;
+        $_SESSION['user_id'] = 5;   // System Apprentice
+
+        // Execute save_acquisition_status method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('save_acquisition_status', 1);        // Acquisition status linked to user course linked to development apprentice
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/list_apprentice'));
+    }
+
+    /**
+     * Asserts that the save_acquisition_status page is loaded correctly when a status id is provided (development apprentice session)
+     */
+    public function testsave_acquisition_statusWithStatusIdWithDevelopmentApprenticeSession() 
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_guest;
+        $_SESSION['user_id'] = 4;
+
+        // Execute save_acquisition_status method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('save_acquisition_status', 1);        // Acquisition status linked to user course linked to development apprentice
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Modifier un statut d\'acquisition', 'h1');
+        $result->assertSeeElement('#edit_acquisition_status');
+        $result->assertSee('Niveau d\'acquisition', 'div');
+        $result->assertSeeElement('#field_acquisition_level');
+        $result->assertSee('Non expliqué', 'option');
+        $result->assertSee('Expliqué', 'option');
+        $result->assertSee('Exercé', 'option');
+        $result->assertSee('Autonome', 'option');
+        $result->assertSeeLink('Annuler');
+        $result->assertSeeInField('save', 'Enregistrer');
+    }
+
+    /**
+     * Asserts that the add_comment page redirects to the list_apprentice view when no status id is provided (no session)
+     */
+    public function testadd_commentWithoutStatusIdWithoutSession() 
+    {
+        // Execute add_comment method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('add_comment');
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/list_apprentice'));
+    }
+
+    /**
+     * Asserts that the add_comment page redirects to the list_apprentice view when a status id is provided (apprentice session)
+     */
+    public function testadd_commentWithStatusIdWithApprenticeSession() 
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_guest;
+
+        // Execute add_comment method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('add_comment', 1);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/list_apprentice'));
+    }
+
+    /**
+     * Asserts that the add_comment page is loaded correctly when a status id is provided (trainer session)
+     */
+    public function testadd_commentWithStatusIdWithTrainerSession() 
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+
+        // Execute add_comment method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('add_comment', 1);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Ajouter un commentaire', 'h1');
+        $result->assertSee('Commentaire', 'label');
+        $result->assertSeeElement('#comment');
+        $result->assertSeeLink('Annuler');
+        $result->assertSeeInField('save', 'Enregistrer');
+    }
+
+    /**
+     * Asserts that getCoursePlanProgress method returns a 403 status code when no user id and no course plan id are given (no session)
+     */
+    public function testgetCoursePlanProgressWithoutUserIdAndCoursePlanIdWithoutSession() 
+    {
+        // Execute getCoursePlanProgress method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('getCoursePlanProgress');
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertStatus(403);
+    }
+
+    /**
+     * Asserts that getCoursePlanProgress method returns a 403 status code when an user id and no course plan id are given (no session)
+     */
+    public function testgetCoursePlanProgressWithUserIdWithoutCoursePlanIdWithoutSession() 
+    {
+        // Execute getCoursePlanProgress method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('getCoursePlanProgress', 4);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertStatus(403);
+    }
+
+    /**
+     * Asserts that getCoursePlanProgress method returns a 403 status code when an user id (development apprentice) and no course plan id are given (system apprentice session)
+     */
+    public function testgetCoursePlanProgressWithDevelopmentApprenticeUserIdWithoutCoursePlanIdWithSystemApprenticeSession() 
+    {
+        // Initialize session
+        $_SESSION['user_id'] = 5;
+
+        // Execute getCoursePlanProgress method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('getCoursePlanProgress', 4);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertStatus(403);
+    }
+
+    /**
+     * Asserts that getCoursePlanProgress method returns a 403 status code when an user id (development apprentice) and no course plan id are given (development apprentice session)
+     */
+    public function testgetCoursePlanProgressWithDevelopmentApprenticeUserIdWithoutCoursePlanIdWithDevelopmentApprenticeSession() 
+    {
+        // Initialize session
+        $_SESSION['user_id'] = 4;
+
+        // Execute getCoursePlanProgress method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('getCoursePlanProgress', 4);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $this->assertNotEmpty($response->getJSON());
+        $this->assertEquals($response->getJSON(), 'test');
+        $result->assertOK();
+
+        // TODO
     }
 
 }

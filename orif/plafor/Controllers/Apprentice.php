@@ -382,6 +382,10 @@ class Apprentice extends \App\Controllers\BaseController
     public function save_acquisition_status($acquisition_status_id = 0) {
         $acquisitionStatus = AcquisitionStatusModel::getInstance()->find($acquisition_status_id);
 
+        if (is_null($acquisitionStatus)) {
+            return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
+        }
+
         if($_SESSION['user_access'] == config('\User\Config\UserConfig')->access_level_apprentice) {
             // No need to check with $user_course outside of an apprentice
             $userCourse = UserCourseModel::getInstance()->find($acquisitionStatus['fk_user_course']);
@@ -390,9 +394,6 @@ class Apprentice extends \App\Controllers\BaseController
             }
         }
 
-        if (is_null($acquisitionStatus)) {
-            return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
-        }
         $acquisitionLevels=[];
         foreach (AcquisitionLevelModel::getInstance()->findAll() as $acquisitionLevel)
             $acquisitionLevels[$acquisitionLevel['id']]=$acquisitionLevel['name'];
@@ -405,9 +406,7 @@ class Apprentice extends \App\Controllers\BaseController
             ];
             AcquisitionStatusModel::getInstance()->update($acquisition_status_id, $acquisitionStatus);
 
-
             if (AcquisitionStatusModel::getInstance()->errors()==null) {
-
                 //if ok
                 return $this->response->setStatusCode(200,'OK');
             }
@@ -423,12 +422,14 @@ class Apprentice extends \App\Controllers\BaseController
 
         return $this->display_view('Plafor\acquisition_status/save', $output);
     }
-    public function add_comment($acquisition_status_id = null, $comment_id = null){
-        $acquisition_status = AcquisitionStatusModel::getInstance()->find($acquisition_status_id);
 
-        if($acquisition_status == null || $_SESSION['user_access'] < config('\User\Config\UserConfig')->access_lvl_trainer){
+    public function add_comment($acquisition_status_id = null, $comment_id = null){
+        if ($acquisition_status_id == null || $_SESSION['user_access'] < config('\User\Config\UserConfig')->access_lvl_trainer)
+        {
             return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
         }
+
+        $acquisition_status = AcquisitionStatusModel::getInstance()->find($acquisition_status_id);
 
         if (count($_POST) > 0) {
             $comment = array(
@@ -444,10 +445,8 @@ class Apprentice extends \App\Controllers\BaseController
 
             if (CommentModel::getInstance()->errors()==null) {
                 //if ok
-
                 return redirect()->to(base_url('plafor/apprentice/view_acquisition_status/'.$acquisition_status['id']));
             }
-        
         }
 
         $comment = CommentModel::getInstance()->find($comment_id);
@@ -468,15 +467,13 @@ class Apprentice extends \App\Controllers\BaseController
         return redirect()->to(base_url('plafor/apprentice/view_acquisition_status/'.$acquisition_status_id));
     }
 
-
-
     /**
      * @param null $userId the id of user
      * If admin
      */
-    public function getCoursePlanProgress($userId=null,$coursePlanId=null){
+    public function getCoursePlanProgress($userId = null, $coursePlanId = null){
         if ($userId==null && $this->session->get('user_id')==null)
-            return;
+            return $this->response->setStatusCode(403);
         //if user is admin
         if($this->session->get('user_access')>=config('\User\UserConfig')->access_lvl_admin){
             return $this->response->setContentType('application/json')->setBody(json_encode($coursePlanId!=null?[(CoursePlanModel::getInstance()->getCoursePlanProgress($userId))[$coursePlanId]]:CoursePlanModel::getInstance()->getCoursePlanProgress($userId),JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
@@ -484,7 +481,6 @@ class Apprentice extends \App\Controllers\BaseController
         //in the case of a trainer see only his apprentices
         elseif ($this->session->get('user_access')>=config('\User\UserConfig')->access_lvl_trainer&&in_array($userId,TrainerApprenticeModel::getApprenticeIdsFromTrainer($this->session->get('user_id')))){
             return $this->response->setContentType('application/json')->setBody(json_encode($coursePlanId!=null?[(CoursePlanModel::getInstance()->getCoursePlanProgress($userId))[$coursePlanId]]:CoursePlanModel::getInstance()->getCoursePlanProgress($userId),JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-
         }
         else{
             $response=null;
@@ -493,9 +489,6 @@ class Apprentice extends \App\Controllers\BaseController
 
             return $response;
         }
-
-
-
     }
     /**
      * Show a user course's details
