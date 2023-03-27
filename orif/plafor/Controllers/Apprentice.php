@@ -588,7 +588,7 @@ class Apprentice extends \App\Controllers\BaseController
                     if ($_SESSION['user_id'] != $user['id']) {
                         User_model::getInstance()->delete($user_id, FALSE);
                     }
-                    return redirect()->to('/user/admin/list_user');
+                    return redirect()->to(base_url('/user/admin/list_user'));
                 case 2: // Delete user
                     if ($_SESSION['user_id'] != $user['id']) {
                         //here we have to delete associated infos
@@ -609,9 +609,9 @@ class Apprentice extends \App\Controllers\BaseController
                         }
                         User_model::getInstance()->delete($user_id, TRUE);
                     }
-                    return redirect()->to('/user/admin/list_user');
+                    return redirect()->to(base_url('/user/admin/list_user'));
                 default: // Do nothing
-                    return redirect()->to('/user/admin/list_user');
+                    return redirect()->to(base_url('/user/admin/list_user'));
             }
         }
     }

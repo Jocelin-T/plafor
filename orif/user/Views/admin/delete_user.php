@@ -13,7 +13,7 @@
             <div class="col-12">
                 <?php if(isset($_SESSION['user_id'])&&$_SESSION['user_id'] != $user['id']){ ?>
                     <div>
-                        <h1><?= lang('user_lang.user').' "'.esc($user['username']).'"' ?></h1>
+                        <h1><?= lang('user_lang.user').' \''.esc($user['username']).'\'' ?></h1>
                         <h4><?= lang('user_lang.what_to_do')?></h4>
                         <div class = "alert alert-info" ><?= lang('user_lang.user_delete_explanation')?></div>
                         <?php if ($user['archive']) { ?>
@@ -35,7 +35,7 @@
                     </div>
                 <?php } else { ?>
                     <div>
-                        <h1><?= lang('user_lang.user').' "'.esc($user['username']).'"' ?></h1>
+                        <h1><?= lang('user_lang.user').' \''.esc($user['username']).'\'' ?></h1>
                         <div class = "alert alert-danger" ><?= lang('user_lang.user_delete_himself')?></div>
                     </div>
                     <div class="text-right">
