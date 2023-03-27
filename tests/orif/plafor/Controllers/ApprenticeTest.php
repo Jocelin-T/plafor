@@ -796,7 +796,7 @@
     }
 
     /**
-     * Asserts that getCoursePlanProgress method returns a 403 status code when an user id (development apprentice) and no course plan id are given (development apprentice session)
+     * Asserts that getCoursePlanProgress method returns a JSON object when an user id (development apprentice) and no course plan id are given (development apprentice session)
      */
     public function testgetCoursePlanProgressWithDevelopmentApprenticeUserIdWithoutCoursePlanIdWithDevelopmentApprenticeSession() 
     {
@@ -811,11 +811,209 @@
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
         $this->assertNotEmpty($response->getBody());
-        $this->assertNotEmpty($response->getJSON());
-        $this->assertEquals($response->getJSON(), 'test');
+        $this->assertJSON($response->getBody());
         $result->assertOK();
-
-        // TODO
+        $result->assertHeader('Content-Type', 'application/json; charset=UTF-8');
     }
 
+    /**
+     * Asserts that getCoursePlanProgress method returns a JSON object when an user id (development apprentice) and a course plan id are given (development apprentice session)
+     */
+    public function testgetCoursePlanProgressWithDevelopmentApprenticeUserIdWithCoursePlanIdWithDevelopmentApprenticeSession() 
+    {
+        // Initialize session
+        $_SESSION['user_id'] = 4;
+
+        // Execute getCoursePlanProgress method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('getCoursePlanProgress', 4, 1);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $this->assertJSON($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'application/json; charset=UTF-8');
+    }
+
+    /**
+     * Asserts that getCoursePlanProgress method returns a JSON object when an user id (development apprentice) and no course plan id are given (administrator session)
+     */
+    public function testgetCoursePlanProgressWithDevelopmentApprenticeUserIdWithoutCoursePlanIdWithAdministratorSession() 
+    {
+        // Initialize session
+        $_SESSION['user_id'] = 1;
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Execute getCoursePlanProgress method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('getCoursePlanProgress', 4);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $this->assertJSON($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'application/json; charset=UTF-8');
+    }
+
+    /**
+     * Asserts that getCoursePlanProgress method returns a JSON object when an user id (development apprentice) and a course plan id are given (administrator session)
+     */
+    public function testgetCoursePlanProgressWithDevelopmentApprenticeUserIdWithCoursePlanIdWithAdministratorSession() 
+    {
+        // Initialize session
+        $_SESSION['user_id'] = 1;
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Execute getCoursePlanProgress method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('getCoursePlanProgress', 4, 1);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $this->assertJSON($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'application/json; charset=UTF-8');
+    }
+
+    /**
+     * Asserts that getCoursePlanProgress method returns a JSON object when an user id (development apprentice) and no course plan id are given (trainer session)
+     */
+    public function testgetCoursePlanProgressWithDevelopmentApprenticeUserIdWithoutCoursePlanIdWithTrainerSession() 
+    {
+        // Initialize session
+        $_SESSION['user_id'] = 2;
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+
+        // Execute getCoursePlanProgress method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('getCoursePlanProgress', 4);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $this->assertJSON($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'application/json; charset=UTF-8');
+    }
+
+    /**
+     * Asserts that getCoursePlanProgress method returns a JSON object when an user id (development apprentice) and a course plan id are given (trainer session)
+     */
+    public function testgetCoursePlanProgressWithhDevelopmentApprenticeUserIdWithCoursePlanIdWithTrainerSession() 
+    {
+        // Initialize session
+        $_SESSION['user_id'] = 2;
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+
+        // Execute getCoursePlanProgress method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('getCoursePlanProgress', 4, 1);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $this->assertJSON($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'application/json; charset=UTF-8');
+    }
+
+    /**
+     * Asserts that view_user_course method redirects to list_apprentice view when no user course id is given
+     */
+    public function testview_user_courseWithoutUserCourseId()
+    {
+        // Execute view_user_course method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('view_user_course');
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/list_apprentice'));
+    }
+
+    /**
+     * Asserts that view_user_course method redirects to list_apprentice view when an user course id is given but linked to an other apprentice
+     */
+    public function testview_user_courseWithUserCourseIdLinkedToAnOtherApprentice()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_level_apprentice;
+        $_SESSION['user_id'] = 5;
+
+        // Execute view_user_course method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('view_user_course', 1);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/list_apprentice'));
+    }
+
+    /**
+     * Asserts that view_user_course method is loaded correctly when an user course id is given for a given development apprentice
+     */
+    public function testview_user_courseWithUserCourseIdLinkedToADevelopmentApprentice()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_level_apprentice;
+        $_SESSION['user_id'] = 4;
+
+        // Execute view_user_course method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('view_user_course', 1);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Détail de la formation de l\'apprenti', 'p');
+        $result->assertSeeLink('ApprentiDev');
+        $result->assertSee('Statuts d\'acquisition des objectifs', 'p');
+        $result->assertSeeLink('A.1.1');
+        $result->assertSeeLink('Enregistrer les besoins et discuter les solutions possibles, s’entretenir avec le client/supérieur sur les restrictions des exigences');
+    }
+
+    /**
+     * Asserts that view_user_course method is loaded correctly when an user course id is given for a given system apprentice
+     */
+    public function testview_user_courseWithUserCourseIdLinkedToASystemApprentice()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_level_apprentice;
+        $_SESSION['user_id'] = 5;
+
+        // Execute view_user_course method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('view_user_course', 2);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Détail de la formation de l\'apprenti', 'p');
+        $result->assertSeeLink('ApprentiSysteme');
+        $result->assertSee('Statuts d\'acquisition des objectifs', 'p');
+        $result->assertSeeLink('A.1.1');
+        $result->assertSeeLink('Etre capable de recevoir, comprendre, planifier et mettre en œuvre un mandat client (organisation, méthodologie, ergonomie, optimisation de l’énergie)');
+    }
 }

@@ -497,12 +497,13 @@ class Apprentice extends \App\Controllers\BaseController
      * @return void
      */
     public function view_user_course($id_user_course = null){
+        if($id_user_course == null){
+            return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
+        }
+
         $objectives = null;
         $acquisition_levels = null;
         $user_course = UserCourseModel::getInstance()->find($id_user_course);
-        if($user_course == null){
-            return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
-        }
 
         $apprentice = User_model::getInstance()->find($user_course['fk_user']);
         if($_SESSION['user_access'] == config('\User\Config\UserConfig')->access_level_apprentice && $apprentice['id'] != $_SESSION['user_id']) {
@@ -511,9 +512,7 @@ class Apprentice extends \App\Controllers\BaseController
         $user_course_status = UserCourseModel::getUserCourseStatus($user_course['fk_status']);
         $course_plan = UserCourseModel::getCoursePlan($user_course['fk_course_plan']);
         $trainers_apprentice = TrainerApprenticeModel::getInstance()->where('fk_apprentice',$apprentice['id'])->findAll();
-        if($user_course == null){
-            return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
-        }
+
         //if url parameters contains filter operationalCompetenceId
         if ($this->request->getGet('operationalCompetenceId')!=null){
             $objectives=[];
