@@ -90,7 +90,7 @@ class CoursePlan extends \App\Controllers\BaseController
 
             $course_plan = CoursePlanModel::getInstance()->withDeleted()->find($course_plan_id);
             if (is_null($course_plan)) {
-                return redirect()->to('/plafor/courseplan/list_course_plan');
+                return redirect()->to(base_url('plafor/courseplan/list_course_plan'));
             }
             switch ($action) {
                 case 0: // Display confirmation
@@ -126,12 +126,11 @@ class CoursePlan extends \App\Controllers\BaseController
 
                     }
 
-
                     count($objectiveIds) > 0 ? ObjectiveModel::getInstance()->whereIn('id', $objectiveIds)->delete() : null;
                     count($competenceDomainIds) > 0 ? OperationalCompetenceModel::getInstance()->whereIn('fk_competence_domain', $competenceDomainIds)->delete() : null;
                     CompetenceDomainModel::getInstance()->where('fk_course_plan', $course_plan_id);
                     CoursePlanModel::getInstance()->delete($course_plan_id, FALSE);
-                    return redirect()->to('/plafor/courseplan/list_course_plan');
+                    return redirect()->to(base_url('plafor/courseplan/list_course_plan'));
                     break;
                 case 3:
                     //Reactiver le plan de formation
@@ -140,16 +139,16 @@ class CoursePlan extends \App\Controllers\BaseController
                     break;
                 default:
                     // Do nothing
-                    return redirect()->to('/plafor/courseplan/list_course_plan');
+                    return redirect()->to(base_url('plafor/courseplan/list_course_plan'));
             }
-        }else{
+        } else {
             return $this->display_view('\User\errors\403error');
         }
     }
     /**
-     * Adds or modify a course plan
+     * Adds or modify a competence domain
      *
-     * @param integer $competence_domain_id = The id of the course plan to modify, leave blank to create a new one
+     * @param integer $competence_domain_id = The id of the competence domain to modify, leave blank to create a new one
      * @return void
      */
     public function save_competence_domain($competence_domain_id = 0, $course_plan_id = 0)
@@ -192,10 +191,10 @@ class CoursePlan extends \App\Controllers\BaseController
     }
 
     /**
-     * Deletes a course plan depending on $action
+     * Deletes a competence domain depending on $action
      *
      * @param integer $competence_domain_id = ID of the competence_domain to affect
-     * @param integer $action = Action to apply on the course plan:
+     * @param integer $action = Action to apply on the competence domain:
      *  - 0 for displaying the confirmation
      *  - 1 for deactivating (soft delete)
      *  - 2 for deleting (hard delete)
@@ -207,12 +206,12 @@ class CoursePlan extends \App\Controllers\BaseController
 
             if (!isset($competence_domain_id)) {
                 // Back to course plans list
-                return redirect()->to('plafor/courseplan/list_course_plan');
+                return redirect()->to(base_url('plafor/courseplan/list_course_plan'));
             } else {
                 $competence_domain = CompetenceDomainModel::getInstance()->withDeleted()->find($competence_domain_id);
                 if (is_null($competence_domain)) {
                     // Back to course plans list
-                    return redirect()->to('plafor/courseplan/list_course_plan');
+                    return redirect()->to(base_url('plafor/courseplan/list_course_plan'));
                 }
             }
 
@@ -250,14 +249,15 @@ class CoursePlan extends \App\Controllers\BaseController
                 default: // Do nothing
                     return redirect()->to(base_url('plafor/courseplan/view_course_plan/' . CompetenceDomainModel::getInstance()->find($competence_domain_id)['fk_course_plan']));
             }
-        }else{
+        } else {
             return $this->display_view('\User\errors\403error');
         }
     }
+
     /**
-     * Adds or modify a course plan
+     * Adds or modify an operational competence
      *
-     * @param integer $operational_competence_id = The id of the course plan to modify, leave blank to create a new one
+     * @param integer $operational_competence_id = The id of the operational competence to modify, leave blank to create a new one
      * @return void
      */
     public function save_operational_competence($operational_competence_id = 0, $competence_domain_id = 0)
@@ -305,15 +305,16 @@ class CoursePlan extends \App\Controllers\BaseController
             );
 
             $this->display_view('\Plafor\operational_competence/save', $output);
-        }else{
+        } else {
             return $this->display_view('\User\errors\403error');
         }
     }
+
     /**
-     * Deletes a course plan depending on $action
+     * Deletes an operational competence depending on $action
      *
-     * @param integer $operational_competence_id = ID of the operational_competence to affect
-     * @param integer $action = Action to apply on the course plan:
+     * @param integer $operational_competence_id = ID of the operational competence to affect
+     * @param integer $action = Action to apply on the operational competence:
      *  - 0 for displaying the confirmation
      *  - 1 for deactivating (soft delete)
      *  - 2 for deleting (hard delete)
@@ -349,10 +350,11 @@ class CoursePlan extends \App\Controllers\BaseController
                     return redirect()->to(base_url('plafor/courseplan/view_competence_domain/' . $operational_competence['fk_competence_domain']));
                     break;
             }
-        }else{
+        } else {
             return $this->display_view('\User\errors\403error');
         }
     }
+
     /**
      * Deletes a user_course depending on $action
      *
@@ -394,14 +396,15 @@ class CoursePlan extends \App\Controllers\BaseController
                 default: // Do nothing
                     return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
             }
-        }else{
+        } else {
             return $this->display_view('\User\errors\403error');
         }
     }
+
     /**
-     * Adds or modify a course plan
+     * Adds or modify an objective
      *
-     * @param integer $objective_id = The id of the course plan to modify, leave blank to create a new one
+     * @param integer $objective_id = The id of the objective to modify, leave blank to create a new one
      * @return void
      */
     public function save_objective($objective_id = 0, $operational_competence_id = 0)
@@ -458,10 +461,10 @@ class CoursePlan extends \App\Controllers\BaseController
         }
     }
     /**
-     * Deletes a course plan depending on $action
+     * Deletes an objective depending on $action
      *
      * @param integer $objective_id = ID of the objective to affect
-     * @param integer $action = Action to apply on the course plan:
+     * @param integer $action = Action to apply on the objective:
      *  - 0 for displaying the confirmation
      *  - 1 for deactivating (soft delete)
      *  - 2 for deleting (hard delete)
@@ -474,6 +477,7 @@ class CoursePlan extends \App\Controllers\BaseController
 
             $objective = ObjectiveModel::getInstance()->withDeleted()->find($objective_id);
             if (is_null($objective)) {
+                // vue à créer
                 return redirect()->to('plafor/courseplan/objective/list');
             }
 
@@ -500,7 +504,7 @@ class CoursePlan extends \App\Controllers\BaseController
                     return redirect()->to(base_url('plafor/courseplan/view_operational_competence/' . $objective['fk_operational_competence']));
                     break;
                 default: // Do nothing
-                    return redirect()->to('plafor/courseplan/view_operational_competence' . $objective['fk_operational_competence']);
+                    return redirect()->to(base_url('plafor/courseplan/view_operational_competence/' . $objective['fk_operational_competence']));
             }
         }else{
             return $this->display_view('\User\errors\403error');
@@ -527,7 +531,6 @@ class CoursePlan extends \App\Controllers\BaseController
                 $coursesId[] = $userCourse->fk_course_plan;
             }
 
-            //$course_plans = $this->course_plan_model->get_many($coursesId);
             $course_plans=$coursePlanModel->whereIn('id',count($coursesId)==0?[null]:$coursesId)->findAll();
         }
 
@@ -619,12 +622,11 @@ class CoursePlan extends \App\Controllers\BaseController
      */
     public function view_operational_competence($operational_competence_id = null)
     {
-        $operational_competence = OperationalCompetenceModel::getInstance()->withDeleted(true)->find($operational_competence_id);
-
-        if($operational_competence == null){
+        if ($operational_competence_id == null) {
             return redirect()->to(base_url('plafor/courseplan/list_course_plan/'));
         }
 
+        $operational_competence = OperationalCompetenceModel::getInstance()->withDeleted(true)->find($operational_competence_id);
         $competence_domain=null;
         $course_plan=null;
         try {
@@ -651,12 +653,11 @@ class CoursePlan extends \App\Controllers\BaseController
      */
     public function view_objective($objective_id = null)
     {
-        $objective = ObjectiveModel::getInstance()->withDeleted()->find($objective_id);
-
-        if($objective == null){
+        if($objective_id == null){
             return redirect()->to(base_url('plafor/courseplan/list_course_plan'));
         }
 
+        $objective = ObjectiveModel::getInstance()->withDeleted()->find($objective_id);
 
         $operational_competence = ObjectiveModel::getOperationalCompetence($objective['fk_operational_competence'],true);
 

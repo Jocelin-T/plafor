@@ -5,7 +5,7 @@
         <div class="row">
             <div class="col-12">
                 <div>
-                    <h1><?= lang('plafor_lang.objective').' "'.$objective['name'].'"' ?></h1>
+                    <h1><?= lang('plafor_lang.objective').' \''.$objective['name'].'\'' ?></h1>
                     <h4><?= lang('user_lang.what_to_do')?></h4>
                     <div class = "alert alert-info" ><?= lang('plafor_lang.objective_'.($objective['archive']==null?'disable_explanation':'enable_explanation'))?></div>
                 </div>

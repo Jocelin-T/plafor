@@ -3,9 +3,9 @@
         <div class="row">
             <div class="col-12">
                 <div>
-                    <h1><?= lang('plafor_lang.apprentice').' "'.$apprentice['username'].'"' ?></h1>
-                    <h1><?= lang('plafor_lang.course_plan').' "'.$course_plan['official_name'].'"' ?></h1>
-                    <h1><?= lang('plafor_lang.status').' "'.$status['name'].'"' ?></h1>
+                    <h1><?= lang('plafor_lang.apprentice').' \''.$apprentice['username'].'\'' ?></h1>
+                    <h1><?= lang('plafor_lang.course_plan').' \''.$course_plan['official_name'].'\'' ?></h1>
+                    <h1><?= lang('plafor_lang.status').' \''.$status['name'].'\'' ?></h1>
                     <h4><?= lang('user_lang.what_to_do')?></h4>
                     <div class = "alert alert-info" ><?= lang('plafor_lang.user_course_disable_explanation')?></div>
                 </div>
