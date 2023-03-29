@@ -1008,6 +1008,36 @@
     }
 
     /**
+     * Asserts that the list_course_plan page is loaded correctly when an apprentice id is given
+     */
+    public function testlist_course_planWithApprenticeId() 
+    {
+        // Execute list_course_plan method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('list_course_plan', 4);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Liste des plans de formation', 'h1');
+        $result->assertSeeLink('Nouveau');
+        $result->assertSeeElement('#toggle_deleted');
+        $result->assertSee('Afficher les éléments désactivés', 'label');
+        $result->assertSee('Nom du plan de formation', 'th');
+        $result->assertSeeElement('#course_planslist');
+        $result->assertSee('88601', 'span');
+        $result->assertDontSee('88602', 'span');
+        $result->assertDontSee('88603', 'span');
+        $result->assertDontSee('88605', 'span');
+        $result->assertDontSee('88611', 'span');        // Informaticienne / Informaticien Sys
+        $result->assertDontSee('88611', 'span');        // Informaticienne / Informaticien Dev
+        $result->assertDontSee('88614', 'span');
+    }
+
+    /**
      * Asserts that the view_course_plan page redirects to the list_course_plan view when no course plan id is given
      */
     public function testview_course_planWithNoCoursePlanId()
@@ -1171,7 +1201,7 @@
     /**
      * Asserts that the view_objective page redirects to the list_course_plan view when no objective id is given
      */
-    public function testview_operational_competenceWithNoObjectiveId()
+    public function testview_objectiveWithNoObjectiveId()
     {
         // Execute view_objective method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
@@ -1189,7 +1219,7 @@
     /**
      * Asserts that the view_objective page is loaded correctly when an objective id is given
      */
-    public function testview_operational_competenceWithObjectiveId()
+    public function testview_objectiveWithObjectiveId()
     {
         // Execute view_objective method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
@@ -1199,7 +1229,6 @@
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
         $this->assertNotEmpty($response->getBody());
-        //$this->assertEquals($response->getBody(), 'test');
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertSee('Détail du plan de formation', 'p');
@@ -1214,7 +1243,20 @@
         $result->assertSee('Détail de la compétence opérationnelle', 'p');
         $result->assertSee('Symbole de la compétence opérationnelle', 'p');
         $result->assertSeeLink('A1');
-        // TODO
+        $result->assertSee('Nom de la compétence opérationnelle', 'p');
+        $result->assertSeeLink('Analyser, structurer et documenter les exigences ainsi que les besoins');
+        $result->assertSee('Compétence méthodologique', 'p');
+        $result->assertSeeLink('Travail structuré, documentation adéquate');
+        $result->assertSee('Compétence sociale', 'p');
+        $result->assertSeeLink('Comprendre et sentir les problèmes du client, communication avec des partenaires');
+        $result->assertSee('Compétence personnelle', 'p');
+        $result->assertSeeLink('Fiabilité, autoréflexion, interrogation constructive du problème');
+        $result->assertSee('Détails de l\'objectif', 'p');
+        $result->assertSee('Symboles de l\'objectif', 'p');
+        $result->assertSee('A.1.1', 'p');
+        $result->assertSee('Taxonomie de l\'objectif', 'p');
+        $result->assertSee('4', 'p');
+        $result->assertSee('Nom de l\'objectif', 'p');
+        $result->assertSee('Enregistrer les besoins et discuter les solutions possibles, s’entretenir avec le client/supérieur sur les restrictions des exigences', 'p');
     }
-
 }
