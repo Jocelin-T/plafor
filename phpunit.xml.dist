@@ -13,7 +13,8 @@
 		xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
 	<coverage includeUncoveredFiles="true" processUncoveredFiles="true">
 		<include>
-			<directory suffix=".php">./app</directory>
+			<directory suffix=".php">./orif/plafor</directory>
+			<directory suffix=".php">./orif/user</directory>
 		</include>
 		<exclude>
 			<directory suffix=".php">./app/Views</directory>
