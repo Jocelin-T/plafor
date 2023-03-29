@@ -67,6 +67,20 @@ class User_modelTest extends CIUnitTestCase
     }
 
     /**
+     * Tests that the check_password_name correctly checks the user password using the username when the user does not exist in the database
+     */
+    public function testcheck_password_nameWithNonExistingUser()
+    {
+        // Initialize non existing username and password
+        $username = 'ApprenticeUnitTest';
+        $userPassword = 'ApprenticeUnitTestPassword';
+
+        // Checks user password using username (Assertion)
+        $checkPasswordName = User_model::check_password_name($username, $userPassword);
+        $this->assertFalse($checkPasswordName);
+    }
+
+    /**
      * Tests that the check_password_email correctly checks the user password using the user email
      */
     public function testcheck_password_email()
@@ -87,17 +101,45 @@ class User_modelTest extends CIUnitTestCase
 
         User_model::getInstance()->insert($user);
 
-        // Checks user password using username (Assertion)
+        // Checks user password using user email address (Assertion)
         $checkPasswordEmail = User_model::check_password_email($userEmail, $userPassword);
         $this->assertTrue($checkPasswordEmail);
 
-        // Checks wrong user password using username (Assertion)
+        // Checks wrong user password using user email address (Assertion)
         $checkPasswordEmail = User_model::check_password_email($userEmail, $userWrongPassword);
         $this->assertFalse($checkPasswordEmail);
 
         // Deletes inserted user after assertions
         $userDb=User_model::getInstance()->where("email", $userEmail)->first();
         User_model::getInstance()->delete($userDb['id'], TRUE);
+    }
+
+    /**
+     * Tests that the check_password_email correctly checks the user password using the username when the user does not exist in the database
+     */
+    public function testcheck_password_emailWithInvalidEmail()
+    {
+        // Initialize invalid user email address and password
+        $userEmail = 'apprenticeunittest';
+        $userPassword = 'ApprenticeUnitTestPassword';
+
+        // Checks user password using username (Assertion)
+        $checkPasswordEmail = User_model::check_password_email($userEmail, $userPassword);
+        $this->assertFalse($checkPasswordEmail);
+    }
+
+    /**
+     * Tests that the check_password_email correctly checks the user password using the username when the user does not exist in the database
+     */
+    public function testcheck_password_emailWithNonExistingUserEmailAddress()
+    {
+        // Initialize non existing user email address and password
+        $userEmail = 'apprenticeunittest@test.com';
+        $userPassword = 'ApprenticeUnitTestPassword';
+
+        // Checks user password using username (Assertion)
+        $checkPasswordEmail = User_model::check_password_email($userEmail, $userPassword);
+        $this->assertFalse($checkPasswordEmail);
     }
 
     /**
