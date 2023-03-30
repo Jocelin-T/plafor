@@ -315,14 +315,14 @@ class Apprentice extends \App\Controllers\BaseController
      */
     public function delete_apprentice_link($link_id, $action = 0)
     {
-
         if ($_SESSION['user_access'] >= config('\User\Config\UserConfig')->access_lvl_trainer) {
             $link = TrainerApprenticeModel::getInstance()->find($link_id);
-            $apprentice = TrainerApprenticeModel::getApprentice($link['fk_apprentice']);
-            $trainer = TrainerApprenticeModel::getTrainer($link['fk_trainer']);
             if (is_null($link)) {
                 return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
             }
+
+            $apprentice = TrainerApprenticeModel::getApprentice($link['fk_apprentice']);
+            $trainer = TrainerApprenticeModel::getTrainer($link['fk_trainer']);
 
             switch ($action) {
                 case 0: // Display confirmation

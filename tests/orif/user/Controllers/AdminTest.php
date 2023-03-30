@@ -301,7 +301,7 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('user/admin/list_user'));
-        $result->assertNull(\User\Models\User_model::getInstance()->where("id", $user_id)->first());
+        $this->assertNull(\User\Models\User_model::getInstance()->where("id", $user_id)->first());
     }
 
     /**

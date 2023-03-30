@@ -11,6 +11,8 @@
 
  use CodeIgniter\Test\CIUnitTestCase;
  use CodeIgniter\Test\ControllerTestTrait;
+
+ use User\Models;
  
  class ApprenticeTest extends CIUnitTestCase
 {
@@ -526,6 +528,28 @@
     }
 
     /**
+     * Asserts that the delete_apprentice_link page redirects to the list_apprentice view when a non existing link is given
+     */
+    public function testdelete_apprentice_linkWithTrainerSessionForNonExistingLink()
+    {
+        // Initialize session
+        $_SESSION['_ci_previous_url'] = 'url';
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+
+        // Execute delete_apprentice_link method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('delete_apprentice_link', 999999);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/list_apprentice'));
+    }
+
+    /**
      * Asserts that the view_acquisition_status page redirects to the list_apprentice view when no status id is provided
      */
     public function testview_acquisition_statusWithoutStatusId() 
@@ -1018,6 +1042,27 @@
     }
 
     /**
+     * Asserts that the delete_user redirects to the list_user view (with a non existing user id)
+     */
+    public function testdelete_userWithNonExistingUserId()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+        $_SESSION['user_id'] = 1;
+
+        // Execute delete_user method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('delete_user', 999999);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertRedirectTo(base_url('/user/admin/list_user'));
+    }
+
+    /**
      * Asserts that the delete_user confirmation message is displayed correctly (when the action equals 0)
      */
     public function testdelete_userConfirmationMessage()
@@ -1026,7 +1071,7 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
         $_SESSION['user_id'] = 1;
 
-        // Execute view_user_course method of Apprentice class
+        // Execute delete_user method of Apprentice class
         $result = $this->controller(Apprentice::class)
         ->execute('delete_user', 4, 0);
 
@@ -1052,7 +1097,7 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
         $_SESSION['user_id'] = 1;
 
-        // Execute view_user_course method of Apprentice class
+        // Execute delete_user method of Apprentice class
         $result = $this->controller(Apprentice::class)
         ->execute('delete_user', 1, 9);
 
@@ -1069,13 +1114,13 @@
      * Asserts that the delete_user redirects to the list_user view (when the action is equals 1)
      * The user won't be disabled because the user_id is equal to the session user id
      */
-    public function testdelete_userWithDisableAction()
+    public function testdelete_userWithDisableActionForSameUserId()
     {
         // Initialize session
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
         $_SESSION['user_id'] = 1;
 
-        // Execute view_user_course method of Apprentice class
+        // Execute delete_user method of Apprentice class
         $result = $this->controller(Apprentice::class)
         ->execute('delete_user', 1, 1);
 
@@ -1089,16 +1134,43 @@
     }
 
     /**
+     * Asserts that the delete_user redirects to the list_user view (when the action is equals 1)
+     */
+    public function testdelete_userWithDisableAction()
+    {
+        $user_id = 4;
+
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+        $_SESSION['user_id'] = 1;
+
+        // Execute delete_user method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('delete_user', $user_id, 1);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('/user/admin/list_user'));
+
+        // Enable user id 4
+        \User\Models\User_model::getInstance()->update($user_id, ['archive' => NULL]);
+    }
+
+    /**
      * Asserts that the delete_user redirects to the list_user view (when the action is equals 2)
      * The user won't be deleted because the user_id is equal to the session user id
      */
-    public function testdelete_userWithDeleteAction()
+    public function testdelete_userWithDeleteActionForSameUserId()
     {
         // Initialize session
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
         $_SESSION['user_id'] = 1;
 
-        // Execute view_user_course method of Apprentice class
+        // Execute delete_user method of Apprentice class
         $result = $this->controller(Apprentice::class)
         ->execute('delete_user', 1, 2);
 

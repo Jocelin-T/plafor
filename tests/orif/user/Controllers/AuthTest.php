@@ -42,7 +42,7 @@
     }
 
     /**
-     * Asserts that the login page is redirected (no session)
+     * Asserts that the login page is redirected 
      */
     public function testloginPageWithSession()
     {
