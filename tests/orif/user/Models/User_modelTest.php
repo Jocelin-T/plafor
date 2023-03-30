@@ -62,7 +62,7 @@ class User_modelTest extends CIUnitTestCase
         $this->assertFalse($checkPasswordName);
 
         // Deletes inserted user after assertions
-        $userDb=User_model::getInstance()->where("username", $username)->first();
+        $userDb = User_model::getInstance()->where("username", $username)->first();
         User_model::getInstance()->delete($userDb['id'], TRUE);
     }
 

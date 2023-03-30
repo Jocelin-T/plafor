@@ -155,7 +155,7 @@ class Admin extends BaseController
     {
         $user = User_model::getInstance()->withDeleted()->find($user_id);
         if (is_null($user)) {
-            return redirect()->to('/user/admin/list_user');
+            return redirect()->to(base_url('/user/admin/list_user'));
         }
 
         switch($action) {
@@ -170,14 +170,14 @@ class Admin extends BaseController
                 if ($_SESSION['user_id'] != $user['id']) {
                     User_model::getInstance()->delete($user_id, FALSE);
                 }
-                return redirect()->to('/user/admin/list_user');
+                return redirect()->to(base_url('/user/admin/list_user'));
             case 2: // Delete user
                 if ($_SESSION['user_id'] != $user['id']) {
                     User_model::getInstance()->delete($user_id, TRUE);
                 }
-                return redirect()->to('/user/admin/list_user');
+                return redirect()->to(base_url('/user/admin/list_user'));
             default: // Do nothing
-                return redirect()->to('/user/admin/list_user');
+                return redirect()->to(base_url('/user/admin/list_user'));
         }
     }
 
@@ -191,10 +191,10 @@ class Admin extends BaseController
     {
         $user = User_model::getInstance()->withDeleted()->find($user_id);
         if (is_null($user)) {
-            return redirect()->to('/user/admin/list_user');
+            return redirect()->to(base_url('/user/admin/list_user'));
         } else {
             User_model::getInstance()->withDeleted()->update($user_id,['archive'=>null]);
-            return redirect()->to('/user/admin/save_user/'.$user_id);
+            return redirect()->to(base_url('/user/admin/save_user/'.$user_id));
         }
     }
 
@@ -227,12 +227,12 @@ class Admin extends BaseController
                 $password = $this->request->getPost('user_password_new');
                 $password = password_hash($password, config('\User\Config\UserConfig')->password_hash_algorithm);
                 User_model::getInstance()->update($user_id, ['password' => $password]);
-                return redirect()->to('/user/admin/list_user');
+                return redirect()->to(base_url('/user/admin/list_user'));
             }
         }
 
         $user = User_model::getInstance()->withDeleted()->find($user_id);
-        if (is_null($user)) return redirect()->to('/user/admin/list_user');
+        if (is_null($user)) return redirect()->to(base_url('/user/admin/list_user'));
 
         $output = array(
             'user' => $user,
