@@ -209,7 +209,6 @@ class Apprentice extends \App\Controllers\BaseController
                 if (UserCourseModel::getInstance()->errors() == null) {
                     //if ok
                     return redirect()->to(base_url('plafor/apprentice/view_apprentice/' . $id_apprentice));
-                    exit();
                 }
             }
             $course_plans = [];
