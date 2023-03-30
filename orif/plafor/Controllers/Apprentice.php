@@ -460,7 +460,7 @@ class Apprentice extends \App\Controllers\BaseController
         return $this->display_view('\Plafor\comment/save',$output);
     }
 
-    public function delete_comment($comment_id = 0, $acquisition_status_id = 0) {
+    public function delete_comment($comment_id, $acquisition_status_id) {
         CommentModel::getInstance()->delete($comment_id);
         return redirect()->to(base_url('plafor/apprentice/view_acquisition_status/'.$acquisition_status_id));
     }

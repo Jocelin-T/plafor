@@ -1182,4 +1182,21 @@
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('/user/admin/list_user'));
     }
+
+    /**
+     * Assert that the delete_comment redirects to the view_acquisition_status view 
+     */
+    public function testdelete_comment() {
+        // Execute delete_comment method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('delete_comment', 1, 1);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/view_acquisition_status/1'));
+    }
 }
