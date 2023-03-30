@@ -158,7 +158,6 @@ class Apprentice extends \App\Controllers\BaseController
 
             if ($id_apprentice == null || $apprentice['fk_user_type'] != User_type_model::getInstance()->where('name', lang('plafor_lang.title_apprentice'))->first()['id']) {
                 return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
-                exit();
             }
 
             if (count($_POST) > 0) {
