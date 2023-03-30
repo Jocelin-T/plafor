@@ -131,12 +131,10 @@ class CoursePlan extends \App\Controllers\BaseController
                     CompetenceDomainModel::getInstance()->where('fk_course_plan', $course_plan_id);
                     CoursePlanModel::getInstance()->delete($course_plan_id, FALSE);
                     return redirect()->to(base_url('plafor/courseplan/list_course_plan'));
-                    break;
                 case 3:
                     //Reactiver le plan de formation
                     CoursePlanModel::getInstance()->withDeleted()->update($course_plan_id, ['archive' => null]);
                     return redirect()->to(base_url('plafor/courseplan/list_course_plan'));
-                    break;
                 default:
                     // Do nothing
                     return redirect()->to(base_url('plafor/courseplan/list_course_plan'));
@@ -237,14 +235,12 @@ class CoursePlan extends \App\Controllers\BaseController
                     CompetenceDomainModel::getInstance()->delete($competence_domain_id);
 
                     return redirect()->to(base_url('plafor/courseplan/view_course_plan/' . $courseplanId));
-                    break;
 
                 case 3:
                     //Reactiver le domaine de compétences
 
                     CompetenceDomainModel::getInstance()->withDeleted()->update($competence_domain_id, ['archive' => null]);
                     return redirect()->to(base_url('plafor/courseplan/view_course_plan/' . $competence_domain['fk_course_plan']));
-                    break;
 
                 default: // Do nothing
                     return redirect()->to(base_url('plafor/courseplan/view_course_plan/' . CompetenceDomainModel::getInstance()->find($competence_domain_id)['fk_course_plan']));
@@ -340,15 +336,12 @@ class CoursePlan extends \App\Controllers\BaseController
                     ObjectiveModel::getInstance()->where('fk_operational_competence', $operational_competence_id)->delete();
                     OperationalCompetenceModel::getInstance()->delete($operational_competence_id, FALSE);
                     return redirect()->to(base_url('plafor/courseplan/view_competence_domain/' . $operational_competence['fk_competence_domain']));
-                    break;
                 case 3:
                     //Reactiver la compétence opérationnelle
                     OperationalCompetenceModel::getInstance()->withDeleted()->update($operational_competence_id, ['archive' => null]);
                     return redirect()->to(base_url('plafor/courseplan/view_competence_domain/' . $operational_competence['fk_competence_domain']));
-                    break;
                 default: // Do nothing
                     return redirect()->to(base_url('plafor/courseplan/view_competence_domain/' . $operational_competence['fk_competence_domain']));
-                    break;
             }
         } else {
             return $this->display_view('\User\errors\403error');
@@ -493,16 +486,12 @@ class CoursePlan extends \App\Controllers\BaseController
                 case 1: // Deactivate (soft delete) objective
                     ObjectiveModel::getInstance()->delete($objective_id, FALSE);
                     return redirect()->to(base_url('plafor/courseplan/view_operational_competence/' . $objective['fk_operational_competence']));
-                    break;
                 case 2: // Hard delete
                     ObjectiveModel::getInstance()->delete($objective_id, TRUE);
                     return redirect()->to(base_url('plafor/courseplan/view_operational_competence/' . $objective['fk_operational_competence']));
-                    break;
-
                 case 3:
                     ObjectiveModel::getInstance()->withDeleted()->update($objective_id, ['archive' => null]);
                     return redirect()->to(base_url('plafor/courseplan/view_operational_competence/' . $objective['fk_operational_competence']));
-                    break;
                 default: // Do nothing
                     return redirect()->to(base_url('plafor/courseplan/view_operational_competence/' . $objective['fk_operational_competence']));
             }

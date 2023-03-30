@@ -205,12 +205,32 @@
     public function testdelete_course_planWithAdministratorSessionUserAccessAndFakeAction()
     {
         // Initialize session
-        $_SESSION['_ci_previous_url'] = 'url'; // (needed for delete_course_plan view)
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
 
         // Execute delete_course_plan method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
         ->execute('delete_course_plan', 1, 9);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
+    }
+
+    /**
+     * Asserts that the delete_course_plan page redirects to the list_course_plan view when an administrator session user access is set (with a non existing course plan)
+     */
+    public function testdelete_course_planWithAdministratorSessionUserAccessAndNonExistingCoursePlan()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Execute delete_course_plan method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_course_plan', 999999);
 
         // Assertions
         $response = $result->response();
