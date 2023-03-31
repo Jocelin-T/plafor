@@ -11,6 +11,8 @@
 
  use CodeIgniter\Test\CIUnitTestCase;
  use CodeIgniter\Test\ControllerTestTrait;
+
+ use Plafor\Models;
  
  class CoursePlanTest extends CIUnitTestCase
 {
@@ -242,6 +244,32 @@
     }
 
     /**
+     * Asserts that the delete_course_plan page redirects to the list_course_plan view when an administrator session user access is set (with an  existing course plan and the enable action)
+     */
+    public function testdelete_course_planWithAdministratorSessionUserAccessAndExistingCoursePlanAndEnableAction()
+    {
+        $course_plan_id = 1;
+
+        // Disable course plan
+        \Plafor\Models\CoursePlanModel::getInstance()->delete($course_plan_id, FALSE);
+
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Execute delete_course_plan method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_course_plan', $course_plan_id, 3);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
+    }
+
+    /**
      * Asserts that the save_competence_domain page redirects to the 403 error view when an apprentice session user access is set
      */
     public function testsave_competence_domainWithApprenticeSessionUserAccess()
@@ -423,6 +451,27 @@
     }
 
     /**
+     * Asserts that the delete_competence_domain page redirects to the list_course_plan view when an administrator session user access is set (with a non existing compentence domain id)
+     */
+    public function testdelete_competence_domainWitAdministratorSessionUserAccessWithNonExistingCompetenceDomainId()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Execute delete_competence_domain method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_competence_domain', 999999);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
+    }
+
+    /**
      * Asserts that the delete_competence_domain page is loaded correctly when an administrator session user access is set (with compentence domain id and no action)
      */
     public function testdelete_competence_domainWitAdministratorSessionUserAccessWithCompetenceDomainIdAndNoAction()
@@ -458,6 +507,32 @@
         // Execute delete_competence_domain method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
         ->execute('delete_competence_domain', 1, 9);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_course_plan/1'));
+    }
+
+    /**
+     * Asserts that the delete_competence_domain page redirects to the view_course_plan view when an administrator session user access is set (with compentence domain id and enable action)
+     */
+    public function testdelete_competence_domainWitAdministratorSessionUserAccessWithCompetenceDomainIdAndEnableAction()
+    {
+        $competence_domain_id = 1;
+
+        // Disable competence domain
+        \Plafor\Models\CompetenceDomainModel::getInstance()->delete($competence_domain_id, FALSE);
+
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Execute delete_competence_domain method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_competence_domain', $competence_domain_id, 3);
 
         // Assertions
         $response = $result->response();
@@ -677,6 +752,53 @@
         // Execute delete_operational_competence method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
         ->execute('delete_operational_competence', 1, 9);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_competence_domain/1'));
+    }
+
+    /**
+     * Asserts that the delete_operational_competence page redirects to the view_competence_domain view when an administrator session user access is set (non existing operational competence)
+     */
+    public function testdelete_operational_competenceWitAdministratorSessionUserAccessForNonExistingOperationalCompetenceId()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Execute delete_operational_competence method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_operational_competence', 999999);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
+    }
+
+    /**
+     * Asserts that the delete_operational_competence page redirects to the view_competence_domain view when an administrator session user access is set (enable action)
+     */
+    public function testdelete_operational_competenceWitAdministratorSessionUserAccessWithEnableAction()
+    {
+        $operational_competence_id = 1;
+
+        // Disable operational competence
+        \Plafor\Models\OperationalCompetenceModel::getInstance()->delete($operational_competence_id, FALSE);
+
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Execute delete_operational_competence method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_operational_competence', $operational_competence_id, 3);
 
         // Assertions
         $response = $result->response();
@@ -998,6 +1120,58 @@
     }
 
     /**
+     * Asserts that the delete_objective page redirects to the view_operational_competence view when an administrator session user access is set (disable action)
+     */
+    public function testdelete_objectiveWitAdministratorSessionUserAccessAndDisableAction()
+    {
+        $objective_id = 1;
+
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Execute delete_objective method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_objective', $objective_id, 1);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_operational_competence/1'));
+
+        // Enable objective
+        \Plafor\Models\ObjectiveModel::getInstance()->withDeleted()->update($objective_id, ['archive' => null]);
+    }
+
+    /**
+     * Asserts that the delete_objective page redirects to the view_operational_competence view when an administrator session user access is set (enable action)
+     */
+    public function testdelete_objectiveWitAdministratorSessionUserAccessAndEnableAction()
+    {
+        $objective_id = 1;
+
+        // Disable objective
+        \Plafor\Models\ObjectiveModel::getInstance()->delete($objective_id, FALSE);
+
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Execute delete_objective method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_objective', $objective_id, 3);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_operational_competence/1'));
+    }
+
+    /**
      * Asserts that the list_course_plan page is loaded correctly when no apprentice id is given
      */
     public function testlist_course_planWithNoApprenticeId() 
@@ -1109,6 +1283,24 @@
     }
 
     /**
+     * Asserts that the view_course_plan page redirects to the list_course_plan view when non existing course plan id is given
+     */
+    public function testview_course_planWithNonExistingCoursePlanId()
+    {
+        // Execute view_course_plan method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('view_course_plan', 999999);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
+    }
+
+    /**
      * Asserts that the view_competence_domain page redirects to the list_course_plan view when no competenvce domain id is given
      */
     public function testview_competence_domainWithNoCompetenceDomainId()
@@ -1154,6 +1346,24 @@
         $result->assertSeeLink('Elaborer diverses propositions de solutions incluant les interfaces utilisateurs requises');
         $result->assertSeeLink('A3');
         $result->assertSeeLink('Vérifier l’exhaustivité des exigences et des besoins dans les propositions de solution choisies');
+    }
+
+    /**
+     * Asserts that the view_competence_domain page redirects to the list_course_plan view when non existing competenvce domain id is given
+     */
+    public function testview_competence_domainWithNonExistingCompetenceDomainId()
+    {
+        // Execute view_competence_domain method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('view_competence_domain', 999999);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
     }
 
     /**
@@ -1219,6 +1429,24 @@
     }
 
     /**
+     * Asserts that the view_operational_competence page redirects to the list_course_plan view when a non existing operational competenvce id is given
+     */
+    public function testview_operational_competenceWithNonExistingOperationalCompetenceId()
+    {
+        // Execute view_operational_competence method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('view_operational_competence', 999999);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
+    }
+
+    /**
      * Asserts that the view_objective page redirects to the list_course_plan view when no objective id is given
      */
     public function testview_objectiveWithNoObjectiveId()
@@ -1278,5 +1506,23 @@
         $result->assertSee('4', 'p');
         $result->assertSee('Nom de l\'objectif', 'p');
         $result->assertSee('Enregistrer les besoins et discuter les solutions possibles, s’entretenir avec le client/supérieur sur les restrictions des exigences', 'p');
+    }
+
+    /**
+     * Asserts that the view_objective page redirects to the list_course_plan view when a non existing objective id is given
+     */
+    public function testview_objectiveWithNonExistingObjectiveId()
+    {
+        // Execute view_objective method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('view_objective', 999999);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
     }
 }
