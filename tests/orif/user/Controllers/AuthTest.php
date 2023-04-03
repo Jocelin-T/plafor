@@ -332,10 +332,12 @@
         // Reset $_POST and $_REQUEST variables
         $_POST['btn_change_password'] = null;
         $_REQUEST['btn_change_password'] = null;
-        $_POST['username'] = null;
-        $_REQUEST['username'] = null;
-        $_POST['password'] = null;
-        $_REQUEST['password'] = null;
+        $_POST['old_password'] = null;
+        $_REQUEST['old_password'] = null;
+        $_POST['new_password'] = null;
+        $_REQUEST['new_password'] = null;
+        $_POST['confirm_password'] = null;
+        $_REQUEST['confirm_password'] = null;
     }
 
     /**
