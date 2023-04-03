@@ -278,7 +278,6 @@
         $userType = self::APPRENTICE_USER_TYPE;
         $username = 'ApprenticeUnitTest';
         $userPassword = 'ApprenticeUnitTestPassword';
-        $userWrongPassword = 'ApprenticeUnitTestWrongPassword';
         
         $user = array(
             'fk_user_type' => $userType,

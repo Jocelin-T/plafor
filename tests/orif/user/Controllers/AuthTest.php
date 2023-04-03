@@ -16,6 +16,8 @@
 {
     use ControllerTestTrait;
 
+    const APPRENTICE_USER_TYPE = 3;
+
     /**
      * Asserts that the login page is loaded correctly (no session)
      */
@@ -39,6 +41,173 @@
         $result->assertSeeInField('username', '');
         $result->assertSeeInField('password', '');
         $result->assertSeeLink('Se connecter');
+    }
+
+    /**
+     * Asserts that the session variable after_login_redirect is correctly set when posting the login page
+     */
+    public function testloginPagePostedAfterLoginRedirectWithoutSession()
+    {
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['after_login_redirect'] = 'test';
+        $_REQUEST['after_login_redirect'] = 'test';
+
+        // Execute login method of Auth class
+        $result = $this->controller(Auth::class)
+            ->execute('login');
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $this->assertEquals($_SESSION['after_login_redirect'], 'test');
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST['after_login_redirect'] = null;
+        $_REQUEST['after_login_redirect'] = null;
+    }
+    
+    /**
+     * Asserts that the session variable is correctly set when posting the login page (simulates a click on button login)
+     * Username and incorrect password are specified (meaning that a warning message is displayed)
+     */
+    public function testloginPagePostedWithoutSessionWithUsernameAndIncorrectPassword()
+    {
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['btn_login'] = 'true';
+        $_REQUEST['btn_login'] = 'true';
+        $_POST['username'] = 'admin';
+        $_REQUEST['username'] = 'admin';
+        $_POST['password'] = 'adminPwd';
+        $_REQUEST['password'] = 'adminPwd';
+
+        // Execute login method of Auth class
+        $result = $this->controller(Auth::class)
+            ->execute('login');
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $this->assertEquals($_SESSION['message-danger'], 'L\'identifiant et le mot de passe ne sont pas valides');
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST['btn_login'] = null;
+        $_REQUEST['btn_login'] = null;
+        $_POST['username'] = null;
+        $_REQUEST['username'] = null;
+        $_POST['password'] = null;
+        $_REQUEST['password'] = null;
+    }
+
+    /**
+     * Asserts that the session variables are correctly set when posting the login page (simulates a click on button login)
+     * Username and password are specified (meaning that the login works)
+     */
+    public function testloginPagePostedWithoutSessionWithUsernameAndPassword()
+    {
+        // Inserts user into database
+        $userType = self::APPRENTICE_USER_TYPE;
+        $username = 'ApprenticeUnitTest';
+        $userPassword = 'ApprenticeUnitTestPassword';
+        
+        $user = array(
+            'fk_user_type' => $userType,
+            'username' => $username,
+            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        \User\Models\User_model::getInstance()->insert($user);
+        $userDb = \User\Models\User_model::getInstance()->where("username", $username)->first();
+        $user_id = $userDb['id'];
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['btn_login'] = 'true';
+        $_REQUEST['btn_login'] = 'true';
+        $_POST['username'] = $username;
+        $_REQUEST['username'] = $username;
+        $_POST['password'] = $userPassword;
+        $_REQUEST['password'] = $userPassword;
+
+        // Execute login method of Auth class
+        $result = $this->controller(Auth::class)
+            ->execute('login');
+
+        // Assertions
+        $this->assertEquals($_SESSION['user_id'], $user_id);
+        $this->assertEquals($_SESSION['username'], $username);
+        $this->assertTrue($_SESSION['logged_in']);
+
+        // Deletes inserted user after assertions
+        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST['btn_login'] = null;
+        $_REQUEST['btn_login'] = null;
+        $_POST['username'] = null;
+        $_REQUEST['username'] = null;
+        $_POST['password'] = null;
+        $_REQUEST['password'] = null;
+    }
+
+    /**
+     * Asserts that the session variables are correctly set when posting the login page (simulates a click on button login)
+     * User email and password are specified (meaning that the login works)
+     */
+    public function testloginPagePostedWithoutSessionWithUserEmailAndPassword()
+    {
+        // Inserts user into database
+        $userType = self::APPRENTICE_USER_TYPE;
+        $username = 'ApprenticeEmailUnitTest';
+        $userEmail = 'apprenticeemailunittest@unittest.com';
+        $userPassword = 'ApprenticeEmailUnitTestPassword';
+        
+        $user = array(
+            'fk_user_type' => $userType,
+            'username' => $username,
+            'email' => $userEmail,
+            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        \User\Models\User_model::getInstance()->insert($user);
+        $userDb = \User\Models\User_model::getInstance()->where("email", $userEmail)->first();
+        $user_id = $userDb['id'];
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['btn_login'] = 'true';
+        $_REQUEST['btn_login'] = 'true';
+        $_POST['username'] = $userEmail;
+        $_REQUEST['username'] = $userEmail;
+        $_POST['password'] = $userPassword;
+        $_REQUEST['password'] = $userPassword;
+
+        // Execute login method of Auth class
+        $result = $this->controller(Auth::class)
+            ->execute('login');
+
+        // Assertions
+        $this->assertEquals($_SESSION['user_id'], $user_id);
+        $this->assertEquals($_SESSION['username'], $username);
+        $this->assertTrue($_SESSION['logged_in']);
+
+        // Deletes inserted user after assertions
+        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST['btn_login'] = null;
+        $_REQUEST['btn_login'] = null;
+        $_POST['username'] = null;
+        $_REQUEST['username'] = null;
+        $_POST['password'] = null;
+        $_REQUEST['password'] = null;
     }
 
     /**
@@ -107,6 +276,66 @@
         $result->assertSeeInField('old_password', '');
         $result->assertSeeInField('new_password', '');
         $result->assertSeeLink('Annuler');
+    }
+    
+    /**
+     * Asserts that the change_password page redirects to the base url when the password is changed successfully
+     */
+    public function testchange_passwordPagePostedWithSessionWithOldAndNewPasswords()
+    {
+        // Inserts user into database
+        $userType = self::APPRENTICE_USER_TYPE;
+        $username = 'ApprenticeUnitTest';
+        $userPassword = 'ApprenticeUnitTestPassword';
+        
+        $user = array(
+            'fk_user_type' => $userType,
+            'username' => $username,
+            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        \User\Models\User_model::getInstance()->insert($user);
+        $userDb = \User\Models\User_model::getInstance()->where("username", $username)->first();
+        $user_id = $userDb['id'];
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['btn_change_password'] = 'true';
+        $_REQUEST['btn_change_password'] = 'true';
+        $_POST['old_password'] = $userPassword;
+        $_REQUEST['old_password'] = $userPassword;
+        $_POST['new_password'] = 'PasswordChanged';
+        $_REQUEST['new_password'] = 'PasswordChanged';
+        $_POST['confirm_password'] = 'PasswordChanged';
+        $_REQUEST['confirm_password'] = 'PasswordChanged';
+
+        // Initialize the session
+        $_SESSION['logged_in'] = true;
+        $_SESSION["username"] = $username;
+        $_SESSION['user_id'] = $user_id;
+
+        // Execute change_password method of Auth class
+        $result = $this->controller(Auth::class)
+            ->execute('change_password');
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url());
+
+        // Deletes inserted user after assertions
+        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST['btn_change_password'] = null;
+        $_REQUEST['btn_change_password'] = null;
+        $_POST['username'] = null;
+        $_REQUEST['username'] = null;
+        $_POST['password'] = null;
+        $_REQUEST['password'] = null;
     }
 
     /**

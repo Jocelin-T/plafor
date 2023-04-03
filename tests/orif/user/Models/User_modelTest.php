@@ -151,7 +151,6 @@ class User_modelTest extends CIUnitTestCase
         $username = 'ApprenticeUnitTest';
         $userEmail = 'apprenticeunittest@unittest.com';
         $userPassword = 'ApprenticeUnitTestPassword';
-        $userWrongPassword = 'ApprenticeUnitTestWrongPassword';
         
         $user = array(
             'fk_user_type' => $userType,
