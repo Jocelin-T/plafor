@@ -72,4 +72,16 @@ class OperationalCompetenceModelTest extends CIUnitTestCase
             $this->assertEquals($operationalCompetence['fk_competence_domain'], 1);
         }
     }
+
+    /**
+     * Checks that the getOperationalCompetences method of OperationalCompetenceModel returns the expected operational competences
+     */
+    public function testgetOperationalCompetencesWithNoCompetenceDomainId()
+    {
+        // Gets the operational competence with the competence domain id 0
+        $operationalCompetences = OperationalCompetenceModel::getOperationalCompetences(false, 0);
+
+        // Assertions
+        $this->assertIsArray($operationalCompetences);
+    }
 }

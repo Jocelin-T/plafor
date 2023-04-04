@@ -78,7 +78,7 @@ class ObjectiveModelTest extends CIUnitTestCase
      */
     public function testgetObjectives()
     {
-        // Gets the objectives
+        // Gets the objectives for the operational competence id 1
         $objectives = ObjectiveModel::getObjectives(false, 1);
 
         // Assertions
@@ -88,5 +88,17 @@ class ObjectiveModelTest extends CIUnitTestCase
         foreach ($objectives as $objective) {
             $this->assertEquals($objective['fk_operational_competence'], 1);
         }
+    }
+
+    /**
+     * Checks that the getObjectives method of ObjectiveModel returns the expected objectives
+     */
+    public function testgetObjectivesWiNoOperationalCompetenceId()
+    {
+        // Gets the objectives
+        $objectives = ObjectiveModel::getObjectives(false, 0);
+
+        // Assertions
+        $this->assertIsArray($objectives);
     }
 }

@@ -88,4 +88,16 @@ class CoursePlanModelTest extends CIUnitTestCase
         $this->assertEquals($coursePlanProgress[1]['competenceDomains'][1]['operationalCompetences'][1]['objectives'][1]['symbol'], 'A.1.2');
         $this->assertEquals($coursePlanProgress[1]['competenceDomains'][1]['operationalCompetences'][1]['objectives'][1]['name'], ' Confirmer les exigences en ses propres termes (traiter et en déduire, lister les questions)');
     }
+
+    /**
+     * Checks that the getCoursePlanProgress method of CoursePlanModel returns null
+     */
+    public function testgetCoursePlanProgressWithNoUserId()
+    {
+        // Gets the user plan progress
+        $coursePlanProgress = CoursePlanModel::getInstance()->getCoursePlanProgress(null);
+
+        // Assertions
+        $this->assertNull($coursePlanProgress);
+    }
 }

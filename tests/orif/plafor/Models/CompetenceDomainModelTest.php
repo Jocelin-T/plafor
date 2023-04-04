@@ -72,4 +72,16 @@ class CompetenceDomainModelTest extends CIUnitTestCase
             $this->assertEquals($competenceDomain['fk_course_plan'], 1);
         }
     }
+
+    /**
+     * Checks that the getCompetenceDomains method of CompetenceDomainModel returns the expected competence domains
+     */
+    public function testgetCompetenceDomainsWithNoCoursePlanId()
+    {
+        // Gets the competence domains with the course plan id 1
+        $competenceDomains = CompetenceDomainModel::getCompetenceDomains(false);
+
+        // Assertions
+        $this->assertIsArray($competenceDomains);
+    }
 }
