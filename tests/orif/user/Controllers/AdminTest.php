@@ -18,6 +18,7 @@
 {
     use ControllerTestTrait;
 
+    const TRAINER_USER_TYPE = 2;
     const APPRENTICE_USER_TYPE = 3;
 
     /**
@@ -506,5 +507,167 @@
 
         // Enable user id 1
         \User\Models\User_model::getInstance()->update($user_id, ['archive' => NULL]);
+    }
+
+    /**
+     * Asserts that the password_change_user page redirects to the list_user view after updating the password (POST)
+     * (Do not move this function before the password_change_user and save_user (GET) tests as it seems that setting $_POST has side-effects)
+     */
+    public function testpassword_change_userPostedWhenChangingPassword()
+    {
+        // Inserts user into database
+        $userType = self::APPRENTICE_USER_TYPE;
+        $username = 'ApprenticeChangePasswordUnitTest';
+        $userPassword = 'ApprenticeUnitTestPassword';
+        $userNewPassword = 'ApprenticeUnitTestNewPassword';
+        
+        $user = array(
+            'fk_user_type' => $userType,
+            'username' => $username,
+            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        \User\Models\User_model::getInstance()->insert($user);
+        $userDb = \User\Models\User_model::getInstance()->where("username", $username)->first();
+        $userId = $userDb['id'];
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = $userId;
+        $_REQUEST['id'] = $userId;
+        $_POST['user_password_new'] = $userNewPassword;
+        $_REQUEST['user_password_new'] = $userNewPassword;
+        $_POST['user_password_again'] = $userNewPassword;
+        $_REQUEST['user_password_again'] = $userNewPassword;
+
+        // Execute password_change_user method of Admin class
+        $result = $this->controller(Admin::class)
+        ->execute('password_change_user', $userId);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('/user/admin/list_user'));
+
+        // Deletes inserted user after assertions
+        \User\Models\User_model::getInstance()->delete($userId, TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = null;
+        $_REQUEST = null;
+    }
+
+    /**
+     * Asserts that the save_user page redirects to the list_user view after inserting a new user (POST)
+     * (Do not move this function before the password_change_user and save_user (GET) tests as it seems that setting $_POST has side-effects)
+     */
+    public function testsave_userPostedForANewUser()
+    {
+        $username = 'ApprenticeSaveUserUnitTest';
+
+        // Initialize session
+        $_SESSION['user_id'] = 1;
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = 0;
+        $_REQUEST['id'] = 0;
+        $_POST['user_name'] = $username;
+        $_REQUEST['user_name'] = $username;
+        $_POST['user_email'] = 'apprenticesaveuserunittest@test.com';
+        $_REQUEST['user_email'] = 'apprenticesaveuserunittest@test.com';
+        $_POST['user_usertype'] = self::APPRENTICE_USER_TYPE;
+        $_REQUEST['user_usertype'] = self::APPRENTICE_USER_TYPE;
+        $_POST['user_password'] = 'ApprenticeUnitTestPassword';
+        $_REQUEST['user_password'] = 'ApprenticeUnitTestPassword';
+        $_POST['user_password_again'] = 'ApprenticeUnitTestPassword';
+        $_REQUEST['user_password_again'] = 'ApprenticeUnitTestPassword';
+
+        // Execute save_user method of Admin class 
+        $result = $this->controller(Admin::class)
+        ->execute('save_user');
+
+        // Get user from database
+        $userDb = \User\Models\User_model::getInstance()->where("username", $username)->first();
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $this->assertNotNull($userDb);
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('/user/admin/list_user'));
+
+        // Deletes inserted user after assertions
+        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = null;
+        $_REQUEST = null;
+    }
+
+    /**
+     * Asserts that the save_user page redirects to the list_user view after updating an existing user (POST)
+     * (Do not move this function before the password_change_user and save_user (GET) tests as it seems that setting $_POST has side-effects)
+     */
+    public function testsave_userPostedForAnExistingUser()
+    {
+        // Initialize session
+        $_SESSION['user_id'] = 1;
+
+        // Inserts user into database
+        $userType = self::APPRENTICE_USER_TYPE;
+        $username = 'SaveUserUnitTest';
+        $userPassword = 'UnitTestPassword';
+        
+        $user = array(
+            'fk_user_type' => $userType,
+            'username' => $username,
+            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        // Get user id
+        \User\Models\User_model::getInstance()->insert($user);
+        $userDb = \User\Models\User_model::getInstance()->where("username", $username)->first();
+        $userId = $userDb['id'];
+
+        // Prepare the POST request to update this user
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = $userId;
+        $_REQUEST['id'] = $userId;
+        $_POST['user_name'] = $username;
+        $_REQUEST['user_name'] = $username;
+        $_POST['user_email'] = 'saveuserunittest@test.com';
+        $_REQUEST['user_email'] = 'saveuserunittest@test.com';
+        $_POST['user_usertype'] = self::TRAINER_USER_TYPE;
+        $_REQUEST['user_usertype'] = self::TRAINER_USER_TYPE;
+
+        // Execute save_user method of Admin class 
+        $result = $this->controller(Admin::class)
+        ->execute('save_user', $userId);
+
+        // Get user from database after update 
+        $userDbUpdate = \User\Models\User_model::getInstance()->where("username", $username)->first();
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $this->assertEquals($userDbUpdate['fk_user_type'], self::TRAINER_USER_TYPE);
+        $this->assertEquals($userDbUpdate['email'], 'saveuserunittest@test.com');
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('/user/admin/list_user'));
+        
+        // Deletes inserted user after assertions
+        \User\Models\User_model::getInstance()->delete($userId, TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = null;
+        $_REQUEST = null;
     }
 }

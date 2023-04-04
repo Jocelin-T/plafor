@@ -66,8 +66,8 @@
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
 
         // Reset $_POST and $_REQUEST variables
-        $_POST['after_login_redirect'] = null;
-        $_REQUEST['after_login_redirect'] = null;
+        $_POST = null;
+        $_REQUEST = null;
     }
     
     /**
@@ -98,12 +98,8 @@
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
 
         // Reset $_POST and $_REQUEST variables
-        $_POST['btn_login'] = null;
-        $_REQUEST['btn_login'] = null;
-        $_POST['username'] = null;
-        $_REQUEST['username'] = null;
-        $_POST['password'] = null;
-        $_REQUEST['password'] = null;
+        $_POST = null;
+        $_REQUEST = null;
     }
 
     /**
@@ -149,12 +145,8 @@
         \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
 
         // Reset $_POST and $_REQUEST variables
-        $_POST['btn_login'] = null;
-        $_REQUEST['btn_login'] = null;
-        $_POST['username'] = null;
-        $_REQUEST['username'] = null;
-        $_POST['password'] = null;
-        $_REQUEST['password'] = null;
+        $_POST = null;
+        $_REQUEST = null;
     }
 
     /**
@@ -202,12 +194,8 @@
         \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
 
         // Reset $_POST and $_REQUEST variables
-        $_POST['btn_login'] = null;
-        $_REQUEST['btn_login'] = null;
-        $_POST['username'] = null;
-        $_REQUEST['username'] = null;
-        $_POST['password'] = null;
-        $_REQUEST['password'] = null;
+        $_POST = null;
+        $_REQUEST = null;
     }
 
     /**
@@ -327,17 +315,11 @@
         $result->assertRedirectTo(base_url());
 
         // Deletes inserted user after assertions
-        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
+        \User\Models\User_model::getInstance()->delete($user_id, TRUE);
 
         // Reset $_POST and $_REQUEST variables
-        $_POST['btn_change_password'] = null;
-        $_REQUEST['btn_change_password'] = null;
-        $_POST['old_password'] = null;
-        $_REQUEST['old_password'] = null;
-        $_POST['new_password'] = null;
-        $_REQUEST['new_password'] = null;
-        $_POST['confirm_password'] = null;
-        $_REQUEST['confirm_password'] = null;
+        $_POST = null;
+        $_REQUEST = null;
     }
 
     /**
