@@ -272,15 +272,14 @@ class CoursePlan extends \App\Controllers\BaseController
                     'personal' => $this->request->getPost('personal'),
                     'fk_competence_domain' => $this->request->getPost('competence_domain')
                 );
+                
                 if ($operational_competence_id > 0) {
                     //update
                     OperationalCompetenceModel::getInstance()->update($operational_competence_id, $operational_competence);
                 } else {
                     //insert
                     OperationalCompetenceModel::getInstance()->insert($operational_competence);
-
                 }
-
 
                 if (OperationalCompetenceModel::getInstance()->errors() == null) {
                     //when it's ok

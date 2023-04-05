@@ -1525,4 +1525,45 @@
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
     }
+
+    /**
+     * Asserts that the save_course_plan page is loaded correctly when an administrator session user access is set with a posted course plan id
+     */
+    /*
+    public function testsave_course_planPostedWithAdministratorSessionUserAccessWithPostedCoursePlanId()
+    {
+        // Initialize session 
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['coursePlanId'] = 1;
+        $_REQUEST['coursePlanId'] = 1;
+
+        // Execute save_course_plan method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_course_plan');
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertSee('Modifier le plan de formation', 'h1');
+        $result->assertSeeElement('#course_plan_form');
+        $result->assertSee('Numéro du plan de formation', 'label');
+        $result->assertSeeInField('formation_number', '88601');
+        $result->assertSee('Nom du plan de formation', 'label');
+        $result->assertSeeInField('official_name', ' Informaticien/-ne CFC Développement d\'applications');
+        $result->assertSee('Date de création du plan de formation', 'label');
+        $result->assertSeeInField('date_begin', '2014-08-01');
+        $result->assertSeeInField('coursePlanId', '1');
+        $result->assertSeeLink('Annuler');
+        $result->assertSeeInField('save', 'Enregistrer');
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array(); 
+    }
+    */
 }

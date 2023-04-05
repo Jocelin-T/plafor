@@ -556,8 +556,8 @@
         \User\Models\User_model::getInstance()->delete($userId, TRUE);
 
         // Reset $_POST and $_REQUEST variables
-        $_POST = null;
-        $_REQUEST = null;
+        $_POST = array();
+        $_REQUEST = array();
     }
 
     /**
@@ -606,8 +606,8 @@
         \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
 
         // Reset $_POST and $_REQUEST variables
-        $_POST = null;
-        $_REQUEST = null;
+        $_POST = array();
+        $_REQUEST = array();
     }
 
     /**
@@ -667,7 +667,7 @@
         \User\Models\User_model::getInstance()->delete($userId, TRUE);
 
         // Reset $_POST and $_REQUEST variables
-        $_POST = null;
-        $_REQUEST = null;
+        $_POST = array();
+        $_REQUEST = array();
     }
 }
