@@ -1527,17 +1527,23 @@
     }
 
     /**
-     * Asserts that the save_course_plan page is loaded correctly when an administrator session user access is set with a posted course plan id
+     * Asserts that the save_course_plan page redirects to list_course_plan when an administrator session user access is set with a posted new course plan
      */
-    public function testsave_course_planPostedWithAdministratorSessionUserAccessWithPostedCoursePlanId()
+    public function testsave_course_planPostedWithAdministratorSessionUserAccessWithPostedNewCoursePlan()
     {
         // Initialize session 
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
-        $_POST['coursePlanId'] = 1;
-        $_REQUEST['coursePlanId'] = 1;
+        $_POST['coursePlanId'] = 0;
+        $_REQUEST['coursePlanId'] = 0;
+        $_POST['formation_number'] = 12345;
+        $_REQUEST['formation_number'] = 12345;
+        $_POST['official_name'] = 'Course Plan Unit Test';
+        $_REQUEST['official_name'] = 'Course Plan Unit Test';
+        $_POST['date_begin'] = '2023-04-05';
+        $_REQUEST['date_begin'] = '2023-04-05';
 
         // Execute save_course_plan method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
@@ -1547,21 +1553,171 @@
         $_POST = array();
         $_REQUEST = array();
 
-        // Assertions
+        // Get course plan from database
+        $coursePlanDb = \Plafor\Models\CoursePlanModel::getInstance()->where("formation_number", 12345)->first();
+
+        // Deletes inserted course plan
+        \Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanDb['id'], TRUE);
+
+         // Assertions
+         $response = $result->response();
+         $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+         $this->assertEmpty($response->getBody());
+         $result->assertOK();
+         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+         $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
+    }
+
+    /**
+     * Asserts that the save_course_plan page is loaded with submitted data when an administrator session user access is set with a posted new course plan and an invalid formation number
+     */
+    public function testsave_course_planPostedWithAdministratorSessionUserAccessWithPostedNewCoursePlanAndInvalidFormationNumber()
+    {
+        // Initialize session 
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Prepare the POST request (with an invalid course plan formation number)
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['coursePlanId'] = 0;
+        $_REQUEST['coursePlanId'] = 0;
+        $_POST['formation_number'] = 12345678;
+        $_REQUEST['formation_number'] = 12345678;
+        $_POST['official_name'] = 'Course Plan Unit Test';
+        $_REQUEST['official_name'] = 'Course Plan Unit Test';
+        $_POST['date_begin'] = '2023-04-05';
+        $_REQUEST['date_begin'] = '2023-04-05';
+        $_POST['id'] = 0;
+        $_REQUEST['id'] = 0;
+
+        // Execute save_course_plan method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_course_plan');
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+         // Assertions
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
         $this->assertNotEmpty($response->getBody());
         $result->assertOK();
-        $result->assertSee('Modifier le plan de formation', 'h1');
+        $result->assertSee('Ajouter un plan de formation', 'h1');
         $result->assertSeeElement('#course_plan_form');
+        $result->assertSee('Le champ Numéro du plan de formation ne peut pas dépasser une longueur de 5 caractères.', 'div');
         $result->assertSee('Numéro du plan de formation', 'label');
-        $result->assertSeeInField('formation_number', '88601');
+        $result->assertSeeInField('formation_number', '12345678');
         $result->assertSee('Nom du plan de formation', 'label');
-        $result->assertSeeInField('official_name', ' Informaticien/-ne CFC Développement d\'applications');
+        $result->assertSeeInField('official_name', ' Course Plan Unit Test');
         $result->assertSee('Date de création du plan de formation', 'label');
-        $result->assertSeeInField('date_begin', '2014-08-01');
-        $result->assertSeeInField('coursePlanId', '1');
+        $result->assertSeeInField('date_begin', '2023-04-05');
+        $result->assertSeeInField('coursePlanId', '');
         $result->assertSeeLink('Annuler');
         $result->assertSeeInField('save', 'Enregistrer');
     }
+
+    /**
+     * Asserts that the save_course_plan page is loaded with submitted data when an administrator session user access is set with a posted new course plan and an existing formation number
+     */
+    public function testsave_course_planPostedWithAdministratorSessionUserAccessWithPostedNewCoursePlanAndExistingFormationNumber()
+    {
+        // Initialize session 
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Prepare the POST request (with an existing course plan formation number)
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['coursePlanId'] = 0;
+        $_REQUEST['coursePlanId'] = 0;
+        $_POST['formation_number'] = 88601;
+        $_REQUEST['formation_number'] = 88601;
+        $_POST['official_name'] = 'Course Plan Unit Test';
+        $_REQUEST['official_name'] = 'Course Plan Unit Test';
+        $_POST['date_begin'] = '2023-04-05';
+        $_REQUEST['date_begin'] = '2023-04-05';
+        $_POST['id'] = 0;
+        $_REQUEST['id'] = 0;
+
+        // Execute save_course_plan method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_course_plan');
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+         // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertSee('Ajouter un plan de formation', 'h1');
+        $result->assertSeeElement('#course_plan_form');
+        $result->assertSee('Le numéro du plan de formation existe déjà', 'div');
+        $result->assertSee('Numéro du plan de formation', 'label');
+        $result->assertSeeInField('formation_number', '88601');
+        $result->assertSee('Nom du plan de formation', 'label');
+        $result->assertSeeInField('official_name', ' Course Plan Unit Test');
+        $result->assertSee('Date de création du plan de formation', 'label');
+        $result->assertSeeInField('date_begin', '2023-04-05');
+        $result->assertSeeInField('coursePlanId', '');
+        $result->assertSeeLink('Annuler');
+        $result->assertSeeInField('save', 'Enregistrer');
+    }
+
+    /*
+    public function testsave_course_planPostedWithAdministratorSessionUserAccessWithPostedCoursePlanId()
+    {
+        // Initialize session 
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Inserts a new course plan into database
+        $formationNumber = 12345;
+        $officialName = 'Course Plan Unit Test';
+        $dateBegin = '2023-04-05';
+
+        $coursePlan = array(
+            'formation_number' => $formationNumber,
+            'official_name' => $officialName,
+            'date_begin' => $dateBegin
+        );
+
+        \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
+
+        $this->assertNull(\Plafor\Models\CoursePlanModel::getInstance()->errors());    // TO REMOVE
+
+        $coursePlanDb = \Plafor\Models\CoursePlanModel::getInstance()->where("formation_number", $formationNumber)->first();
+        $coursePlanId = $coursePlanDb['id'];
+
+        // Prepare the POST request (to update the inserted course plan)
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['coursePlanId'] = $coursePlanId;
+        $_REQUEST['coursePlanId'] = $coursePlanId;
+        $_POST['formation_number'] = 12345;
+        $_REQUEST['formation_number'] = 12345;
+        $_POST['official_name'] = 'Course Plan Update Unit Test';
+        $_REQUEST['official_name'] = 'Course Plan Update Unit Test';
+        $_POST['date_begin'] = '2023-04-05';
+        $_REQUEST['date_begin'] = '2023-04-05';
+        $_POST['id'] = $coursePlanId;
+        $_REQUEST['id'] = $coursePlanId;
+
+        // Execute save_course_plan method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_course_plan');
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Deletes inserted course plan
+        //\Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanId, TRUE);
+
+         // Assertions
+         $response = $result->response();
+         $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+         $this->assertEmpty($response->getBody());
+         $result->assertOK();
+         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+         $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
+    }*/
 }
