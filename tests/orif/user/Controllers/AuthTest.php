@@ -57,6 +57,10 @@
         $result = $this->controller(Auth::class)
             ->execute('login');
 
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
         // Assertions
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
@@ -64,10 +68,6 @@
         $this->assertEquals($_SESSION['after_login_redirect'], 'test');
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
-
-        // Reset $_POST and $_REQUEST variables
-        $_POST = null;
-        $_REQUEST = null;
     }
     
     /**
@@ -89,6 +89,10 @@
         $result = $this->controller(Auth::class)
             ->execute('login');
 
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
         // Assertions
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
@@ -96,10 +100,6 @@
         $this->assertEquals($_SESSION['message-danger'], 'L\'identifiant et le mot de passe ne sont pas valides');
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
-
-        // Reset $_POST and $_REQUEST variables
-        $_POST = null;
-        $_REQUEST = null;
     }
 
     /**
@@ -136,17 +136,17 @@
         $result = $this->controller(Auth::class)
             ->execute('login');
 
+        // Deletes inserted user 
+        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
         // Assertions
         $this->assertEquals($_SESSION['user_id'], $user_id);
         $this->assertEquals($_SESSION['username'], $username);
         $this->assertTrue($_SESSION['logged_in']);
-
-        // Deletes inserted user after assertions
-        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
-
-        // Reset $_POST and $_REQUEST variables
-        $_POST = null;
-        $_REQUEST = null;
     }
 
     /**
@@ -185,17 +185,17 @@
         $result = $this->controller(Auth::class)
             ->execute('login');
 
+        // Deletes inserted user 
+        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();     
+
         // Assertions
         $this->assertEquals($_SESSION['user_id'], $user_id);
         $this->assertEquals($_SESSION['username'], $username);
         $this->assertTrue($_SESSION['logged_in']);
-
-        // Deletes inserted user after assertions
-        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
-
-        // Reset $_POST and $_REQUEST variables
-        $_POST = null;
-        $_REQUEST = null;
     }
 
     /**
@@ -306,6 +306,13 @@
         $result = $this->controller(Auth::class)
             ->execute('change_password');
 
+        // Deletes inserted user
+        \User\Models\User_model::getInstance()->delete($user_id, TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
         // Assertions
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
@@ -313,13 +320,6 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url());
-
-        // Deletes inserted user after assertions
-        \User\Models\User_model::getInstance()->delete($user_id, TRUE);
-
-        // Reset $_POST and $_REQUEST variables
-        $_POST = null;
-        $_REQUEST = null;
     }
 
     /**

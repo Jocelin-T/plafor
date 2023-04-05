@@ -1529,7 +1529,6 @@
     /**
      * Asserts that the save_course_plan page is loaded correctly when an administrator session user access is set with a posted course plan id
      */
-    /*
     public function testsave_course_planPostedWithAdministratorSessionUserAccessWithPostedCoursePlanId()
     {
         // Initialize session 
@@ -1543,6 +1542,10 @@
         // Execute save_course_plan method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
         ->execute('save_course_plan');
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
 
         // Assertions
         $response = $result->response();
@@ -1560,10 +1563,5 @@
         $result->assertSeeInField('coursePlanId', '1');
         $result->assertSeeLink('Annuler');
         $result->assertSeeInField('save', 'Enregistrer');
-
-        // Reset $_POST and $_REQUEST variables
-        $_POST = array();
-        $_REQUEST = array(); 
     }
-    */
 }

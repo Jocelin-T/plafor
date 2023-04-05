@@ -65,6 +65,9 @@
         $result = $this->controller(Admin::class)
         ->execute('list_user', true);
 
+        // Enable user id 1
+        \User\Models\User_model::getInstance()->update($user_id, ['archive' => NULL]);
+
         // Assertions
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
@@ -84,9 +87,6 @@
         $result->assertSeeLink('ApprentiDev');
         $result->assertSeeLink('ApprentiSysteme');
         $result->assertSeeLink('ApprentiOperateur');
-
-        // Enable user id 1
-        \User\Models\User_model::getInstance()->update($user_id, ['archive' => NULL]);
     }
 
     /**
@@ -102,6 +102,9 @@
         // Execute list_user method of Admin class
         $result = $this->controller(Admin::class)
         ->execute('list_user');
+        
+        // Enable user id 1
+        \User\Models\User_model::getInstance()->update($user_id, ['archive' => NULL]);
 
         // Assertions
         $response = $result->response();
@@ -116,9 +119,6 @@
         $result->assertSee('Activé', 'th');
         $result->assertDontSee('Fake User', 'th');
         $result->assertDontSeeLink('admin');
-
-        // Enable user id 1
-        \User\Models\User_model::getInstance()->update($user_id, ['archive' => NULL]);
     }
 
     /**
@@ -255,6 +255,9 @@
         $result = $this->controller(Admin::class)
         ->execute('delete_user', $user_id, 1);
 
+        // Enable user id 1
+        \User\Models\User_model::getInstance()->update($user_id, ['archive' => NULL]);
+
         // Assertions
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
@@ -262,9 +265,6 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('user/admin/list_user'));
-
-        // Enable user id 1
-        \User\Models\User_model::getInstance()->update($user_id, ['archive' => NULL]);
     }
 
     /**
@@ -475,6 +475,9 @@
         $result = $this->controller(Admin::class)
         ->execute('save_user', 1);
 
+        // Enable user id 1
+        \User\Models\User_model::getInstance()->update($user_id, ['archive' => NULL]);
+
         // Assertions
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
@@ -504,14 +507,10 @@
         $result->assertSeeElement('.btn btn-primary');
         $result->assertSeeLink('Annuler');
         $result->assertSeeInField('save', 'Enregistrer');
-
-        // Enable user id 1
-        \User\Models\User_model::getInstance()->update($user_id, ['archive' => NULL]);
     }
 
     /**
      * Asserts that the password_change_user page redirects to the list_user view after updating the password (POST)
-     * (Do not move this function before the password_change_user and save_user (GET) tests as it seems that setting $_POST has side-effects)
      */
     public function testpassword_change_userPostedWhenChangingPassword()
     {
@@ -544,6 +543,13 @@
         $result = $this->controller(Admin::class)
         ->execute('password_change_user', $userId);
 
+        // Deletes inserted user
+        \User\Models\User_model::getInstance()->delete($userId, TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
         // Assertions
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
@@ -551,18 +557,10 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('/user/admin/list_user'));
-
-        // Deletes inserted user after assertions
-        \User\Models\User_model::getInstance()->delete($userId, TRUE);
-
-        // Reset $_POST and $_REQUEST variables
-        $_POST = array();
-        $_REQUEST = array();
     }
 
     /**
      * Asserts that the save_user page redirects to the list_user view after inserting a new user (POST)
-     * (Do not move this function before the password_change_user and save_user (GET) tests as it seems that setting $_POST has side-effects)
      */
     public function testsave_userPostedForANewUser()
     {
@@ -593,6 +591,13 @@
         // Get user from database
         $userDb = \User\Models\User_model::getInstance()->where("username", $username)->first();
 
+        // Deletes inserted user
+        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
         // Assertions
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
@@ -601,18 +606,10 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('/user/admin/list_user'));
-
-        // Deletes inserted user after assertions
-        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
-
-        // Reset $_POST and $_REQUEST variables
-        $_POST = array();
-        $_REQUEST = array();
     }
 
     /**
      * Asserts that the save_user page redirects to the list_user view after updating an existing user (POST)
-     * (Do not move this function before the password_change_user and save_user (GET) tests as it seems that setting $_POST has side-effects)
      */
     public function testsave_userPostedForAnExistingUser()
     {
@@ -653,6 +650,13 @@
         // Get user from database after update 
         $userDbUpdate = \User\Models\User_model::getInstance()->where("username", $username)->first();
 
+        // Deletes inserted user
+        \User\Models\User_model::getInstance()->delete($userId, TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
         // Assertions
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
@@ -662,12 +666,5 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('/user/admin/list_user'));
-        
-        // Deletes inserted user after assertions
-        \User\Models\User_model::getInstance()->delete($userId, TRUE);
-
-        // Reset $_POST and $_REQUEST variables
-        $_POST = array();
-        $_REQUEST = array();
     }
 }
