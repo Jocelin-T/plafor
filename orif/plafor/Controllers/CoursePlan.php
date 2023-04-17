@@ -33,6 +33,7 @@ class CoursePlan extends \App\Controllers\BaseController
     {
         if ($_SESSION['user_access'] >= config('\User\Config\UserConfig')->access_lvl_admin) {
             $lastDatas = array();
+            $coursePlanModel = new CoursePlanModel();
             if (count($_POST) > 0) {
                 $course_plan_id = empty($this->request->getPost('coursePlanId')) ? 0 : $this->request->getPost('coursePlanId');
                 $course_plan = array(
@@ -42,11 +43,11 @@ class CoursePlan extends \App\Controllers\BaseController
                     'id' => $this->request->getPost('id'),
                 );
                 if ($course_plan_id > 0) {
-                    CoursePlanModel::getInstance()->update($course_plan_id, $course_plan);
+                    $coursePlanModel->update($course_plan_id, $course_plan);
                 } else {
-                    CoursePlanModel::getInstance()->insert($course_plan);
+                    $coursePlanModel->insert($course_plan);
                 }
-                if (CoursePlanModel::getInstance()->errors() == null) {
+                if ($coursePlanModel->errors() == null) {
                     return redirect()->to(base_url('/plafor/courseplan/list_course_plan'));
                 } else {//lastdatas takes the last datas if they arent't valid
                     $lastDatas = array(
@@ -62,8 +63,8 @@ class CoursePlan extends \App\Controllers\BaseController
             $formTitle = $course_plan_id <> 0 ? 'update' : 'new';
             $output = array(
                 'title' => (lang('plafor_lang.title_course_plan_' . $formTitle)),
-                'course_plan' => $lastDatas != null ? $lastDatas : CoursePlanModel::getInstance()->withDeleted()->find($course_plan_id),
-                'errors' => CoursePlanModel::getInstance()->errors(),
+                'course_plan' => $lastDatas != null ? $lastDatas : $coursePlanModel->withDeleted()->find($course_plan_id),
+                'errors' => $coursePlanModel->errors(),
             );
 
             $this->display_view('\Plafor\course_plan\save', $output);
