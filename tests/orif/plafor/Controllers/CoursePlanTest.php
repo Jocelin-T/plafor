@@ -1664,8 +1664,10 @@
         $result->assertSeeInField('save', 'Enregistrer');
     }
 
-    /*
-    public function testsave_course_planPostedWithAdministratorSessionUserAccessWithPostedCoursePlanId()
+    /**
+     * Asserts that the save_course_plan page redirects to list_course_plan when an administrator session user access is set with a posted existing course plan 
+     */
+    public function testsave_course_planPostedWithAdministratorSessionUserAccessWithPostedExistingCoursePlanId()
     {
         // Initialize session 
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
@@ -1682,8 +1684,6 @@
         );
 
         \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
-
-        $this->assertNull(\Plafor\Models\CoursePlanModel::getInstance()->errors());    // TO REMOVE
 
         $coursePlanDb = \Plafor\Models\CoursePlanModel::getInstance()->where("formation_number", $formationNumber)->first();
         $coursePlanId = $coursePlanDb['id'];
@@ -1710,7 +1710,7 @@
         $_REQUEST = array();
 
         // Deletes inserted course plan
-        //\Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanId, TRUE);
+        \Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanId, TRUE);
 
          // Assertions
          $response = $result->response();
@@ -1719,5 +1719,5 @@
          $result->assertOK();
          $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
          $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
-    }*/
+    }
 }

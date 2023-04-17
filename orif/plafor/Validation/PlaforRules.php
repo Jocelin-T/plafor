@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Plafor\Validation;
-
 
 use Plafor\Models\CoursePlanModel;
 use Plafor\Models\CompetenceDomainModel;
@@ -43,11 +41,9 @@ class PlaforRules
                     $error = lang('plafor_lang.same_competence_domain');
                     return false;
                 }
-
             }
             //The name isn't associated to the same symbole and courses' plan, but the symbol can be already associated
         }
-
 
         return true;
     }
