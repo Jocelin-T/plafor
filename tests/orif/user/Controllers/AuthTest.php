@@ -119,9 +119,7 @@
             'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
         );
 
-        \User\Models\User_model::getInstance()->insert($user);
-        $userDb = \User\Models\User_model::getInstance()->where("username", $username)->first();
-        $user_id = $userDb['id'];
+        $user_id = \User\Models\User_model::getInstance()->insert($user);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
@@ -137,7 +135,7 @@
             ->execute('login');
 
         // Deletes inserted user 
-        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
+        \User\Models\User_model::getInstance()->delete($user_id, TRUE);
 
         // Reset $_POST and $_REQUEST variables
         $_POST = array();
@@ -168,9 +166,7 @@
             'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
         );
 
-        \User\Models\User_model::getInstance()->insert($user);
-        $userDb = \User\Models\User_model::getInstance()->where("email", $userEmail)->first();
-        $user_id = $userDb['id'];
+        $user_id = \User\Models\User_model::getInstance()->insert($user);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
@@ -186,7 +182,7 @@
             ->execute('login');
 
         // Deletes inserted user 
-        \User\Models\User_model::getInstance()->delete($userDb['id'], TRUE);
+        \User\Models\User_model::getInstance()->delete($user_id, TRUE);
 
         // Reset $_POST and $_REQUEST variables
         $_POST = array();
@@ -282,9 +278,7 @@
             'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
         );
 
-        \User\Models\User_model::getInstance()->insert($user);
-        $userDb = \User\Models\User_model::getInstance()->where("username", $username)->first();
-        $user_id = $userDb['id'];
+        $user_id = \User\Models\User_model::getInstance()->insert($user);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';

@@ -286,13 +286,11 @@
             'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
         );
 
-        \User\Models\User_model::getInstance()->insert($user);
-        $userDb = \User\Models\User_model::getInstance()->where("username", $username)->first();
-        $user_id = $userDb['id'];
+        $userId = \User\Models\User_model::getInstance()->insert($user);
 
         // Execute delete_user method of Admin class (delete action parameter is passed)
         $result = $this->controller(Admin::class)
-        ->execute('delete_user', $user_id, 2);
+        ->execute('delete_user', $userId, 2);
 
         // Assertions
         $response = $result->response();
@@ -301,7 +299,7 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('user/admin/list_user'));
-        $this->assertNull(\User\Models\User_model::getInstance()->where("id", $user_id)->first());
+        $this->assertNull(\User\Models\User_model::getInstance()->where("id", $userId)->first());
     }
 
     /**
@@ -526,9 +524,7 @@
             'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
         );
 
-        \User\Models\User_model::getInstance()->insert($user);
-        $userDb = \User\Models\User_model::getInstance()->where("username", $username)->first();
-        $userId = $userDb['id'];
+        $userId = \User\Models\User_model::getInstance()->insert($user);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
@@ -627,11 +623,8 @@
             'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
         );
 
-        // Get user id
-        \User\Models\User_model::getInstance()->insert($user);
-        $userDb = \User\Models\User_model::getInstance()->where("username", $username)->first();
-        $userId = $userDb['id'];
-
+        $userId = \User\Models\User_model::getInstance()->insert($user);
+        
         // Prepare the POST request to update this user
         $_SERVER['REQUEST_METHOD'] = 'post';
         $_POST['id'] = $userId;

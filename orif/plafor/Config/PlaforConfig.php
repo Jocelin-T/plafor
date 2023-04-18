@@ -21,5 +21,4 @@ class PlaforConfig extends BaseConfig
     public $OBJECTIVE_NAME_MAX_LENGTH=350;
     public $SQL_TEXT_MAX_LENGTH=65535;
     public $MIGRATION_PASSWORD='ys3vTFiR6gyGajz';
-
 }

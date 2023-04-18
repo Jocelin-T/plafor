@@ -350,7 +350,7 @@
     }
 
     /**
-     * Asserts that the save_competence_domain page is loaded correctly when an administrator session user access is set (competenvce domain id and course plan id are set)
+     * Asserts that the save_competence_domain page is loaded correctly when an administrator session user access is set (competence domain id and course plan id are set)
      */
     public function testsave_competence_domainWitAdministratorSessionUserAccessWithCompetenceDomainIdAndCoursePlanId()
     {
@@ -430,7 +430,7 @@
     }
 
     /**
-     * Asserts that the delete_competence_domain page redirects to the list_course_plan view when an administrator session user access is set (without compentence domain id)
+     * Asserts that the delete_competence_domain page redirects to the list_course_plan view when an administrator session user access is set (without competence domain id)
      */
     public function testdelete_competence_domainWitAdministratorSessionUserAccessWithoutCompetenceDomainId()
     {
@@ -451,7 +451,7 @@
     }
 
     /**
-     * Asserts that the delete_competence_domain page redirects to the list_course_plan view when an administrator session user access is set (with a non existing compentence domain id)
+     * Asserts that the delete_competence_domain page redirects to the list_course_plan view when an administrator session user access is set (with a non existing competence domain id)
      */
     public function testdelete_competence_domainWitAdministratorSessionUserAccessWithNonExistingCompetenceDomainId()
     {
@@ -472,7 +472,7 @@
     }
 
     /**
-     * Asserts that the delete_competence_domain page is loaded correctly when an administrator session user access is set (with compentence domain id and no action)
+     * Asserts that the delete_competence_domain page is loaded correctly when an administrator session user access is set (with competence domain id and no action)
      */
     public function testdelete_competence_domainWitAdministratorSessionUserAccessWithCompetenceDomainIdAndNoAction()
     {
@@ -497,7 +497,7 @@
     }
 
     /**
-     * Asserts that the delete_competence_domain page redirects to the view_course_plan view when an administrator session user access is set (with compentence domain id and fake action)
+     * Asserts that the delete_competence_domain page redirects to the view_course_plan view when an administrator session user access is set (with competence domain id and fake action)
      */
     public function testdelete_competence_domainWitAdministratorSessionUserAccessWithCompetenceDomainIdAndFakeAction()
     {
@@ -518,7 +518,7 @@
     }
 
     /**
-     * Asserts that the delete_competence_domain page redirects to the view_course_plan view when an administrator session user access is set (with compentence domain id and enable action)
+     * Asserts that the delete_competence_domain page redirects to the view_course_plan view when an administrator session user access is set (with competence domain id and enable action)
      */
     public function testdelete_competence_domainWitAdministratorSessionUserAccessWithCompetenceDomainIdAndEnableAction()
     {
@@ -1133,6 +1133,9 @@
         $result = $this->controller(CoursePlan::class)
         ->execute('delete_objective', $objective_id, 1);
 
+        // Enable objective
+        \Plafor\Models\ObjectiveModel::getInstance()->withDeleted()->update($objective_id, ['archive' => null]);
+
         // Assertions
         $response = $result->response();
         $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
@@ -1140,9 +1143,6 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('plafor/courseplan/view_operational_competence/1'));
-
-        // Enable objective
-        \Plafor\Models\ObjectiveModel::getInstance()->withDeleted()->update($objective_id, ['archive' => null]);
     }
 
     /**
@@ -1556,7 +1556,7 @@
         // Get course plan from database
         $coursePlanDb = \Plafor\Models\CoursePlanModel::getInstance()->where("formation_number", 12345)->first();
 
-        // Deletes inserted course plan
+        // Delete inserted course plan
         \Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanDb['id'], TRUE);
 
          // Assertions
@@ -1683,21 +1683,18 @@
             'date_begin' => $dateBegin
         );
 
-        \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
-
-        $coursePlanDb = \Plafor\Models\CoursePlanModel::getInstance()->where("formation_number", $formationNumber)->first();
-        $coursePlanId = $coursePlanDb['id'];
+        $coursePlanId = \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
 
         // Prepare the POST request (to update the inserted course plan)
         $_SERVER['REQUEST_METHOD'] = 'post';
         $_POST['coursePlanId'] = $coursePlanId;
         $_REQUEST['coursePlanId'] = $coursePlanId;
-        $_POST['formation_number'] = 12345;
-        $_REQUEST['formation_number'] = 12345;
+        $_POST['formation_number'] = $formationNumber;
+        $_REQUEST['formation_number'] = $formationNumber;
         $_POST['official_name'] = 'Course Plan Update Unit Test';
         $_REQUEST['official_name'] = 'Course Plan Update Unit Test';
-        $_POST['date_begin'] = '2023-04-05';
-        $_REQUEST['date_begin'] = '2023-04-05';
+        $_POST['date_begin'] = $dateBegin;
+        $_REQUEST['date_begin'] = $dateBegin;
         $_POST['id'] = $coursePlanId;
         $_REQUEST['id'] = $coursePlanId;
 
@@ -1709,7 +1706,7 @@
         $_POST = array();
         $_REQUEST = array();
 
-        // Deletes inserted course plan
+        // Delete inserted course plan
         \Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanId, TRUE);
 
          // Assertions
@@ -1719,5 +1716,676 @@
          $result->assertOK();
          $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
          $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
+    }
+
+    /**
+     * Asserts that the save_competence_domain page redirects to view_course_plan view when an administrator session user access is set (competence domain id and course plan id are posted)
+     */
+    public function testsave_competence_domainPostedWitAdministratorSessionUserAccessWithPostedNewCompetenceDomainIdAndCoursePlanId()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = 0;
+        $_REQUEST['id'] = 0;
+        $_POST['symbol'] = 'ZZZZZZZZZZ';
+        $_REQUEST['symbol'] = 'ZZZZZZZZZZ';
+        $_POST['name'] = 'Competence Domain Unit Test';
+        $_REQUEST['name'] = 'Competence Domain Unit Test';
+        $_POST['course_plan'] = 1;
+        $_REQUEST['course_plan'] = 1;
+        
+        // Execute save_competence_domain method of CoursePlan class (to insert the competence domain)
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_competence_domain');
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Get competence domain from database
+        $competenceDomainDb = \Plafor\Models\CompetenceDomainModel::getInstance()->where("name", 'Competence Domain Unit Test')->first();
+
+        // Delete inserted competence domain
+        \Plafor\Models\CompetenceDomainModel::getInstance()->delete($competenceDomainDb['id'], TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_course_plan/1'));
+    }
+
+    /**
+     * Asserts that the save_competence_domain page is loaded with submitted data when an administrator session user access is set (competence domain symbol is not valid)
+     */
+    public function testsave_competence_domainPostedWitAdministratorSessionUserAccessWithPostedNewCompetenceDomainAndInvalidSymbol()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = 0;
+        $_REQUEST['id'] = 0;
+        $_POST['symbol'] = 'ZZZZZZZZZZZ';
+        $_REQUEST['symbol'] = 'ZZZZZZZZZZZ';
+        $_POST['name'] = 'Competence Domain Unit Test';
+        $_REQUEST['name'] = 'Competence Domain Unit Test';
+        $_POST['course_plan'] = 1;
+        $_REQUEST['course_plan'] = 1;
+        
+        // Execute save_competence_domain method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_competence_domain');
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertSee('Ajouter un domaine de compétence', 'h1');
+        $result->assertSeeElement('#competence_domain_form');
+        $result->assertSee('Le champ Symbole du domaine de compétence ne peut pas dépasser une longueur de 10 caractères.', 'div');
+        $result->assertSee('Plan de formation lié au domaine de compétence', 'label');
+        $result->assertSeeElement('#course_plan');
+        $result->assertSee(' Informaticien/-ne CFC Développement d\'applications', 'option');
+        $result->assertSee(' Informaticien/-ne CFC Informatique d\'entreprise', 'option');
+        $result->assertSee('Symbole du domaine de compétence', 'label');
+        $result->assertSeeElement('#competence_domain_symbol');
+        $result->assertSee('Nom du domaine de compétence', 'label');
+        $result->assertSeeElement('#competence_domain_name');
+        $result->assertSeeLink('Annuler');
+        $result->assertSeeInField('save', 'Enregistrer');
+    }
+
+    /**
+     * Asserts that the save_competence_domain page is loaded with submitted data when an administrator session user access is set (competence domain already exists in the database)
+     */
+    public function testsave_competence_domainPostedWitAdministratorSessionUserAccessWithPostedNewCompetenceDomainAlreadyExisting()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Insert a new competence domnain
+        $symbol = 'ZZZZZZZZZZ';
+        $name = 'Competence Domain Unit Test';
+        $coursePlanId = 1;
+
+        $competenceDomain = array(
+            'symbol' => $symbol,
+            'name' => $name,
+            'fk_course_plan' => $coursePlanId,
+            'id' => 0
+        );
+
+        $competenceDomainId = \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = 0;
+        $_REQUEST['id'] = 0;
+        $_POST['symbol'] = $symbol;
+        $_REQUEST['symbol'] = $symbol;
+        $_POST['name'] = $name;
+        $_REQUEST['name'] = $name;
+        $_POST['course_plan'] = $coursePlanId;
+        $_REQUEST['course_plan'] = $coursePlanId;
+        
+        // Execute save_competence_domain method of CoursePlan class (to insert the already inserted competence domain)
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_competence_domain');
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Delete inserted competence domain
+        \Plafor\Models\CompetenceDomainModel::getInstance()->delete($competenceDomainId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertSee('Ajouter un domaine de compétence', 'h1');
+        $result->assertSeeElement('#competence_domain_form');
+        $result->assertSee('Le domaine de compétences existe déjà', 'div');
+        $result->assertSee('Plan de formation lié au domaine de compétence', 'label');
+        $result->assertSeeElement('#course_plan');
+        $result->assertSee(' Informaticien/-ne CFC Développement d\'applications', 'option');
+        $result->assertSee(' Informaticien/-ne CFC Informatique d\'entreprise', 'option');
+        $result->assertSee('Symbole du domaine de compétence', 'label');
+        $result->assertSeeElement('#competence_domain_symbol');
+        $result->assertSee('Nom du domaine de compétence', 'label');
+        $result->assertSeeElement('#competence_domain_name');
+        $result->assertSeeLink('Annuler');
+        $result->assertSeeInField('save', 'Enregistrer');
+    }
+
+    /**
+     * Asserts that the save_competence_domain page redirects to the view_course_plan view when an administrator session user access is set (updating an existing competence domain)
+     */
+    public function testsave_competence_domainPostedWitAdministratorSessionUserAccessWithPostedExistingCompetenceDomain()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Insert a new competence domnain
+        $symbol = 'ZZZZZZZZZZ';
+        $name = 'Competence Domain Unit Test';
+        $coursePlanId = 1;
+
+        $competenceDomain = array(
+            'symbol' => $symbol,
+            'name' => $name,
+            'fk_course_plan' => $coursePlanId,
+            'id' => 0
+        );
+
+        $competenceDomainId = \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = $competenceDomainId;
+        $_REQUEST['id'] = $competenceDomainId;
+        $_POST['symbol'] = $symbol;
+        $_REQUEST['symbol'] = $symbol;
+        $_POST['name'] = 'Competence Domain Update Unit Test';
+        $_REQUEST['name'] = 'Competence Domain Update Unit Test';
+        $_POST['course_plan'] = $coursePlanId;
+        $_REQUEST['course_plan'] = $coursePlanId;
+        
+        // Execute save_competence_domain method of CoursePlan class (to insert the already inserted competence domain)
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_competence_domain');
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Delete inserted competence domain
+        \Plafor\Models\CompetenceDomainModel::getInstance()->delete($competenceDomainId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_course_plan/1'));
+    }
+
+    /**
+     * Asserts that the save_operational_competence page redirects to the view_competence_domain view when an administrator session user access is set (inserting a new operational competence)
+     */
+    public function testsave_operational_competencePostedWitAdministratorSessionUserAccessWithNewOperationalCompetence()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = 0;
+        $_REQUEST['id'] = 0;
+        $_POST['symbol'] = 'ZZZZZZZZZZ';
+        $_REQUEST['symbol'] = 'ZZZZZZZZZZ';
+        $_POST['name'] = 'Operational Competence Unit Test';
+        $_REQUEST['name'] = 'Operational Competence Unit Test';
+        $_POST['methodologic'] = 'Operational Competence Unit Test';
+        $_REQUEST['methodologic'] = 'Operational Competence Unit Test';
+        $_POST['social'] = 'Operational Competence Unit Test';
+        $_REQUEST['social'] = 'Operational Competence Unit Test';
+        $_POST['personal'] = 'Operational Competence Unit Test';
+        $_REQUEST['personal'] = 'Operational Competence Unit Test';
+        $_POST['competence_domain'] = 1;
+        $_REQUEST['competence_domain'] = 1;
+
+        // Execute save_operational_competence method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_operational_competence', 0, 1);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Get operational competence from database
+        $operationalCompetenceDb = \Plafor\Models\OperationalCompetenceModel::getInstance()->where("name", 'Operational Competence Unit Test')->first();
+
+        // Delete inserted operational competence
+        \Plafor\Models\OperationalCompetenceModel::getInstance()->delete($operationalCompetenceDb['id'], TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_competence_domain/1'));
+    }
+
+    /**
+     * Asserts that the save_operational_competence page is loaded correctly with submitted data when an administrator session user access is set (invalid symbol for the new operational competence)
+     */
+    public function testsave_operational_competencePostedWitAdministratorSessionUserAccessWithNewOperationalCompetenceAndInvalidSymbol()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = 0;
+        $_REQUEST['id'] = 0;
+        $_POST['symbol'] = 'ZZZZZZZZZZZ';
+        $_REQUEST['symbol'] = 'ZZZZZZZZZZZ';
+        $_POST['name'] = 'Operational Competence Unit Test';
+        $_REQUEST['name'] = 'Operational Competence Unit Test';
+        $_POST['methodologic'] = 'Operational Competence Unit Test';
+        $_REQUEST['methodologic'] = 'Operational Competence Unit Test';
+        $_POST['social'] = 'Operational Competence Unit Test';
+        $_REQUEST['social'] = 'Operational Competence Unit Test';
+        $_POST['personal'] = 'Operational Competence Unit Test';
+        $_REQUEST['personal'] = 'Operational Competence Unit Test';
+        $_POST['competence_domain'] = 1;
+        $_REQUEST['competence_domain'] = 1;
+
+        // Execute save_operational_competence method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_operational_competence', 0, 1);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertSee('Ajouter une compétence opérationnelle', 'h1');
+        $result->assertSeeElement('#operational_competence_form');
+        $result->assertSee('Le champ Symbole de la compétence opérationnelle ne peut pas dépasser une longueur de 10 caractères.', 'div');
+        $result->assertSee('Domaine de compétence lié à la compétence opérationnelle', 'label');
+        $result->assertSeeElement('#competence_domain');
+        $result->assertSee('Saisie, interprétation et mise en œuvre des exigences des applications', 'option');
+        $result->assertSee('Symbole de la compétence opérationnelle', 'label');
+        $result->assertSeeInField('symbol', '');
+        $result->assertSee('Nom de la compétence opérationnelle', 'label');
+        $result->assertSeeInField('name', '');
+        $result->assertSee('Compétence méthodologique', 'label');
+        $result->assertSeeElement('#operational_competence_methodologic');
+        $result->assertSee('Compétence sociale', 'label');
+        $result->assertSeeElement('#operational_competence_social');
+        $result->assertSee('Compétence personnelle', 'label');
+        $result->assertSeeElement('#operational_competence_personal');
+        $result->assertSeeLink('Annuler');
+        $result->assertSeeInField('save', 'Enregistrer');
+    }
+
+    /**
+     * Asserts that the save_operational_competence page redirects to the view_competence_domain view when an administrator session user access is set (update an existing operational competence)
+     */
+    public function testsave_operational_competencePostedWitAdministratorSessionUserAccessWithPostedExistingOperationalCompetence()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Insert a new operational competence
+        $symbol = 'ZZZZZZZZZZ';
+        $name = 'Operational Competence Unit Test';
+        $methodologic = 'Operational Competence Unit Test';
+        $social = 'Operational Competence Unit Test';
+        $personal = 'Operational Competence Unit Test';
+        $competenceDomainId = 1;
+
+        $operationalCompetence = array(
+            'id' => 0,
+            'symbol' => $symbol,
+            'name' => $name,
+            'methodologic' => $methodologic,
+            'social' => $social,
+            'personal' => $personal,
+            'fk_competence_domain' => $competenceDomainId
+        );
+
+        $operationalCompetenceId = \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = $operationalCompetenceId;
+        $_REQUEST['id'] = $operationalCompetenceId;
+        $_POST['symbol'] = $symbol;
+        $_REQUEST['symbol'] = $symbol;
+        $_POST['name'] = 'Operational Competence Update Unit Test';
+        $_REQUEST['name'] = 'Operational Competence Update Unit Test';
+        $_POST['methodologic'] = 'Operational Competence Update Unit Test';
+        $_REQUEST['methodologic'] = 'Operational Competence Update Unit Test';
+        $_POST['social'] = 'Operational Competence Update Unit Test';
+        $_REQUEST['social'] = 'Operational Competence Update Unit Test';
+        $_POST['personal'] = 'Operational Competence Update Unit Test';
+        $_REQUEST['personal'] = 'Operational Competence Update Unit Test';
+        $_POST['competence_domain'] = $competenceDomainId;
+        $_REQUEST['competence_domain'] = $competenceDomainId;
+
+        // Execute save_operational_competence method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_operational_competence', $operationalCompetenceId, $competenceDomainId);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Delete inserted operational competence
+        \Plafor\Models\OperationalCompetenceModel::getInstance()->delete($operationalCompetenceId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_competence_domain/1'));
+    }
+
+    /**
+     * Asserts that the save_objective page redirects to the view_operational_competence view when an administrator session user access is set (inserting a new objective)
+     */
+    public function testsave_objectivePostedWitAdministratorSessionUserAccessWithNewObjective()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = 0;
+        $_REQUEST['id'] = 0;
+        $_POST['symbol'] = 'ZZZZZZZZZZ';
+        $_REQUEST['symbol'] = 'ZZZZZZZZZZ';
+        $_POST['name'] = 'Objective Unit Test';
+        $_REQUEST['name'] = 'Objective Unit Test';
+        $_POST['taxonomy'] = 99999;
+        $_REQUEST['taxonomy'] = 99999;
+        $_POST['operational_competence'] = 1;
+        $_REQUEST['operational_competence'] = 1;
+        
+        // Execute save_objective method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_objective', 0, 1);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Get objective from database
+        $objectiveDb = \Plafor\Models\ObjectiveModel::getInstance()->where("name", 'Objective Unit Test')->first();
+        $objectiveId = $objectiveDb['id'];
+
+        // Delete automatically inserted acquisition statuses for the inserted objective
+        \Plafor\Models\AcquisitionStatusModel::getInstance()->where('fk_objective ', $objectiveId)->delete();
+
+        // Delete inserted objective
+        \Plafor\Models\ObjectiveModel::getInstance()->delete($objectiveId, TRUE);
+ 
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_operational_competence/1'));
+    }
+
+    /**
+     * Asserts that the save_objective page is loaded correctly with submitted data when an administrator session user access is set (inserting a new objective with an invalid symbol)
+     */
+    public function testsave_objectivePostedWitAdministratorSessionUserAccessWithNewObjectiveAndInvalidSymbol()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = 0;
+        $_REQUEST['id'] = 0;
+        $_POST['symbol'] = 'ZZZZZZZZZZZ';
+        $_REQUEST['symbol'] = 'ZZZZZZZZZZZ';
+        $_POST['name'] = 'Objective Unit Test';
+        $_REQUEST['name'] = 'Objective Unit Test';
+        $_POST['taxonomy'] = 99999;
+        $_REQUEST['taxonomy'] = 99999;
+        $_POST['operational_competence'] = 1;
+        $_REQUEST['operational_competence'] = 1;
+        
+        // Execute save_objective method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_objective', 0, 1);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+ 
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertSee('Ajouter un objectif', 'h1');
+        $result->assertSeeElement('#objective_form');
+        $result->assertSee('Le champ Symboles de l\'objectif ne peut pas dépasser une longueur de 10 caractères.', 'div');
+        $result->assertSee('Compétence opérationnelle liée à l\'objectif', 'label');
+        $result->assertSeeElement('#operational_competence');
+        $result->assertSee('Analyser, structurer et documenter les exigences ainsi que les besoins', 'option');
+        $result->assertSee('Symboles de l\'objectif', 'label');
+        $result->assertSeeElement('#objective_symbol');
+        $result->assertSeeInField('symbol', '');
+        $result->assertSee('Taxonomie de l\'objectif', 'label');
+        $result->assertSeeElement('#objective_taxonomy');
+        $result->assertSeeInField('taxonomy', '');
+        $result->assertSee('Nom de l\'objectif', 'label');
+        $result->assertSeeElement('#objective_name');
+        $result->assertSeeInField('name', '');
+        $result->assertSeeLink('Annuler');
+        $result->assertSeeInField('save', 'Enregistrer');
+    }
+
+    /**
+     * Asserts that the save_objective page redirects to the view_operational_competence view when an administrator session user access is set (updating an existing objective)
+     */
+    public function testsave_objectivePostedWitAdministratorSessionUserAccessWithExistingObjective()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Insert a new objective into database
+        $symbol = 'ZZZZZZZZZZ';
+        $name = 'Objective Unit Test';
+        $taxonomy = 99999;
+        $operationalCompetenceId = 1;
+
+        $objective = array(
+            'symbol' => $symbol,
+            'taxonomy' => $taxonomy,
+            'name' => $name,
+            'fk_operational_competence' => $operationalCompetenceId
+        );
+
+        $objectiveId = \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = $objectiveId;
+        $_REQUEST['id'] = $objectiveId;
+        $_POST['symbol'] = $symbol;
+        $_REQUEST['symbol'] = $symbol;
+        $_POST['name'] = 'Objective Update Unit Test';
+        $_REQUEST['name'] = 'Objective Update Unit Test';
+        $_POST['taxonomy'] = $taxonomy;
+        $_REQUEST['taxonomy'] = $taxonomy;
+        $_POST['operational_competence'] = $operationalCompetenceId;
+        $_REQUEST['operational_competence'] = $operationalCompetenceId;
+        
+        // Execute save_objective method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_objective', $objectiveId, $operationalCompetenceId);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Delete inserted objective
+        \Plafor\Models\ObjectiveModel::getInstance()->delete($objectiveId, TRUE);
+ 
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_operational_competence/1'));
+    }
+
+    /**
+     * Asserts that the delete_objective page redirects to the view_operational_competence view when an administrator session user access is set (delete action)
+     */
+    public function testdelete_objectiveWitAdministratorSessionUserAccessAndDeleteAction()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Insert a new objective into database
+        $symbol = 'ZZZZZZZZZZ';
+        $name = 'Objective Unit Test';
+        $taxonomy = 99999;
+        $operationalCompetenceId = 1;
+
+        $objective = array(
+            'symbol' => $symbol,
+            'taxonomy' => $taxonomy,
+            'name' => $name,
+            'fk_operational_competence' => $operationalCompetenceId
+        );
+
+        $objectiveId = \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+
+        // Execute delete_objective method of CoursePlan class (to delete the inserted objective)
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_objective', $objectiveId, 2);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_operational_competence/1'));
+    }
+
+    /**
+     * Asserts that the delete_operational_competence page redirects to the view_competence_domain view when an administrator session user access is set (disable action)
+     */
+    public function testdelete_operational_competenceWitAdministratorSessionUserAccessWithDisableAction()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Insert a new operational competence
+        $symbol = 'ZZZZZZZZZZ';
+        $name = 'Operational Competence Unit Test';
+        $methodologic = 'Operational Competence Unit Test';
+        $social = 'Operational Competence Unit Test';
+        $personal = 'Operational Competence Unit Test';
+        $competenceDomainId = 1;
+
+        $operationalCompetence = array(
+            'id' => 0,
+            'symbol' => $symbol,
+            'name' => $name,
+            'methodologic' => $methodologic,
+            'social' => $social,
+            'personal' => $personal,
+            'fk_competence_domain' => $competenceDomainId
+        );
+
+        $operationalCompetenceId = \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
+
+        // Execute delete_operational_competence method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_operational_competence', $operationalCompetenceId, 1);
+
+        // Delete disabled operational competence
+        \Plafor\Models\OperationalCompetenceModel::getInstance()->delete($operationalCompetenceId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_competence_domain/1'));
+    }
+
+    /**
+     * Asserts that the delete_competence_domain page redirects to the view_course_plan view when an administrator session user access is set (with competence domain id and disable action)
+     */
+    public function testdelete_competence_domainWitAdministratorSessionUserAccessWithCompetenceDomainIdAndDisableAction()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Insert a new competence domain
+        $symbol = 'ZZZZZZZZZZ';
+        $name = 'Competence Domain Unit Test';
+        $coursePlanId = 1;
+
+        $competenceDomain = array(
+            'symbol' => $symbol,
+            'name' => $name,
+            'fk_course_plan' => $coursePlanId,
+            'id' => 0
+        );
+
+        $competenceDomainId = \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
+        /*
+        // Insert a new operational competence
+        $symbol = 'ZZZZZZZZZZ';
+        $name = 'Operational Competence Unit Test';
+        $methodologic = 'Operational Competence Unit Test';
+        $social = 'Operational Competence Unit Test';
+        $personal = 'Operational Competence Unit Test';
+
+        $operationalCompetence = array(
+            'id' => 0,
+            'symbol' => $symbol,
+            'name' => $name,
+            'methodologic' => $methodologic,
+            'social' => $social,
+            'personal' => $personal,
+            'fk_competence_domain' => $competenceDomainId
+        );
+
+        $operationalCompetenceId = \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
+        */
+        // Execute delete_competence_domain method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_competence_domain', $competenceDomainId, 1);
+
+        // Delete disabled competence domain
+        \Plafor\Models\CompetenceDomainModel::getInstance()->delete($competenceDomainId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/view_course_plan/1'));
     }
 }
