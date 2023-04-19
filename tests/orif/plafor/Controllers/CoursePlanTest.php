@@ -1389,6 +1389,9 @@
      */
     public function testview_operational_competenceWithOperationalCompetenceId()
     {
+        // Initialize session 
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
         // Execute view_operational_competence method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
         ->execute('view_operational_competence', 1);
