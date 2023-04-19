@@ -33,12 +33,15 @@ foreach ($courses as $course){
                     <a href="<?= $session->get('_ci_previous_url'); ?>" class="btn btn-default">
                         <?= lang('common_lang.btn_cancel'); ?>
                     </a> 
-                    <?php 
-                    echo $course_plan['archive']!=null?"<a href=".base_url('plafor/courseplan/delete_course_plan/'.$course_plan['id'].'/3').">".lang('common_lang.reactivate')."</a>"
-                    :
-                    "<a href=".base_url(uri_string().'/1')." class={btn btn-danger} >".
-                        lang('common_lang.btn_disable');"
-                    </a> "?>
+                    <?php if ($course_plan['archive'] != null) { ?>
+                        <a href="<?= base_url('plafor/courseplan/delete_course_plan/'.$course_plan['id'].'/3'); ?>" class="btn btn-default">
+                        <?= lang('common_lang.reactivate'); ?>
+                    </a>
+                    <?php } else { ?>
+                    <a href="<?= base_url(uri_string().'/1'); ?>" class="btn btn-danger">
+                        <?= lang('common_lang.btn_disable'); ?>
+                    </a>
+                    <?php } ?>
                 </div>
             </div>
         </div>
