@@ -2471,4 +2471,99 @@
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
     }
+
+    /**
+     * Asserts that the delete_user_course page redirects to the list_apprentice view when an administrator session user access is set (delete action)
+     */
+    public function testdelete_user_courseWitAdministratorSessionUserAccessAndDeleteAction()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Insert a new course plan
+        $coursePlan = array(
+            'formation_number' => 12345,
+            'official_name' => 'Course Plan Unit Test',
+            'date_begin' => '2023-04-05'
+        );
+
+        $coursePlanId = \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
+
+        // Insert a new competence domain
+        $competenceDomain = array(
+            'symbol' => 'ZZZZZZZZZZ',
+            'name' => 'Competence Domain Unit Test',
+            'fk_course_plan' => $coursePlanId,
+            'id' => 0
+        );
+
+        $competenceDomainId = \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
+        
+        // Insert a new operational competence linked to the inserted competence domain
+        $operationalCompetence = array(
+            'id' => 0,
+            'symbol' => 'ZZZZZZZZZZ',
+            'name' => 'Operational Competence Unit Test',
+            'methodologic' => 'Operational Competence Unit Test',
+            'social' => 'Operational Competence Unit Test',
+            'personal' => 'Operational Competence Unit Test',
+            'fk_competence_domain' => $competenceDomainId
+        );
+
+        $operationalCompetenceId = \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
+        
+        // Insert a new objective linked to the inserted operational competence
+        $objective = array(
+            'symbol' => 'ZZZZZZZZZZ',
+            'taxonomy' => 99999,
+            'name' => 'Objective Unit Test',
+            'fk_operational_competence' => $operationalCompetenceId
+        );
+
+        $objectiveId = \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+
+        // Insert a new user course
+        $userCourse = array(
+            'fk_user' => 4,
+            'fk_course_plan' => $coursePlanId,
+            'fk_status' => 1,
+            'date_begin' => '2023-04-19',
+            'date_end' => '0000-00-00',
+        );
+
+        $userCourseId = \Plafor\Models\UserCourseModel::getInstance()->insert($userCourse);
+
+        // Insert a new acquisition status linked to the inserted objective and to the inserted user course
+        $acquisitionStatus = array(
+            'fk_objective' => $objectiveId,
+            'fk_user_course' => $userCourseId,
+            'fk_acquisition_level' => 1
+        );
+
+        \Plafor\Models\AcquisitionStatusModel::getInstance()->insert($acquisitionStatus);
+
+        // Execute delete_user_course method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_user_course', $userCourseId, 1);
+
+        // Delete inserted objective
+        \Plafor\Models\ObjectiveModel::getInstance()->delete($objectiveId, TRUE);
+
+        // Delete inserted operational competence
+        \Plafor\Models\OperationalCompetenceModel::getInstance()->delete($operationalCompetenceId, TRUE);
+
+        // Delete inserted competence domain
+        \Plafor\Models\CompetenceDomainModel::getInstance()->delete($competenceDomainId, TRUE);
+
+        // Delete inserted course plan
+        \Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/list_apprentice'));
+    }
 }
