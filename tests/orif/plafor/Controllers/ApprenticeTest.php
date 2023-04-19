@@ -1042,6 +1042,34 @@
     }
 
     /**
+     * Asserts that view_user_course page is loaded correctly when an user course id is given for a given system apprentice (connexion with an administrator account)
+     */
+    public function testview_user_courseWithUserCourseIdLinkedToASystemApprenticeWithAdministratorAccount()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+        $_SESSION['user_id'] = 1;
+
+        // Execute view_user_course method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('view_user_course', 2);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Détail de la formation de l\'apprenti', 'p');
+        $result->assertSeeLink('ApprentiSysteme');
+        $result->assertSee('Statuts d\'acquisition des objectifs', 'p');
+        $result->assertSeeLink('A.1.1');
+        $result->assertSeeLink('Etre capable de recevoir, comprendre, planifier et mettre en œuvre un mandat client (organisation, méthodologie, ergonomie, optimisation de l’énergie)');
+        $result->assertSeeLink('Modifer la formation');
+        $result->assertSeeLink('Supprimer la formation');
+    }
+
+    /**
      * Asserts that the delete_user redirects to the list_user view (with a non existing user id)
      */
     public function testdelete_userWithNonExistingUserId()

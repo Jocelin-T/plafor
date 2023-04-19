@@ -2341,41 +2341,49 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
 
         // Insert a new competence domain
-        $symbol = 'ZZZZZZZZZZ';
-        $name = 'Competence Domain Unit Test';
         $coursePlanId = 1;
 
         $competenceDomain = array(
-            'symbol' => $symbol,
-            'name' => $name,
+            'symbol' => 'ZZZZZZZZZZ',
+            'name' => 'Competence Domain Unit Test',
             'fk_course_plan' => $coursePlanId,
             'id' => 0
         );
 
         $competenceDomainId = \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
-        /*
-        // Insert a new operational competence
-        $symbol = 'ZZZZZZZZZZ';
-        $name = 'Operational Competence Unit Test';
-        $methodologic = 'Operational Competence Unit Test';
-        $social = 'Operational Competence Unit Test';
-        $personal = 'Operational Competence Unit Test';
-
+        
+        // Insert a new operational competence linked to the inserted competence domain
         $operationalCompetence = array(
             'id' => 0,
-            'symbol' => $symbol,
-            'name' => $name,
-            'methodologic' => $methodologic,
-            'social' => $social,
-            'personal' => $personal,
+            'symbol' => 'ZZZZZZZZZZ',
+            'name' => 'Operational Competence Unit Test',
+            'methodologic' => 'Operational Competence Unit Test',
+            'social' => 'Operational Competence Unit Test',
+            'personal' => 'Operational Competence Unit Test',
             'fk_competence_domain' => $competenceDomainId
         );
 
         $operationalCompetenceId = \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
-        */
+        
+        // Insert a new objective linked to the inserted operational competence
+        $objective = array(
+            'symbol' => 'ZZZZZZZZZZ',
+            'taxonomy' => 99999,
+            'name' => 'Objective Unit Test',
+            'fk_operational_competence' => $operationalCompetenceId
+        );
+
+        $objectiveId = \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+
         // Execute delete_competence_domain method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
         ->execute('delete_competence_domain', $competenceDomainId, 1);
+
+        // Delete disabled objective
+        \Plafor\Models\ObjectiveModel::getInstance()->delete($objectiveId, TRUE);
+
+        // Delete disabled operational competence
+        \Plafor\Models\OperationalCompetenceModel::getInstance()->delete($operationalCompetenceId, TRUE);
 
         // Delete disabled competence domain
         \Plafor\Models\CompetenceDomainModel::getInstance()->delete($competenceDomainId, TRUE);
@@ -2387,5 +2395,80 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('plafor/courseplan/view_course_plan/1'));
+    }
+
+    /**
+     * Asserts that the delete_course_plan page redirects to the list_course_plan view when an administrator session user access is set (with an existing course plan and the disable action)
+     */
+    public function testdelete_course_planWithAdministratorSessionUserAccessAndExistingCoursePlanAndDisableAction()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Insert a new course plan
+        $coursePlan = array(
+            'formation_number' => 12345,
+            'official_name' => 'Course Plan Unit Test',
+            'date_begin' => '2023-04-05'
+        );
+
+        $coursePlanId = \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
+
+        // Insert a new competence domain
+        $competenceDomain = array(
+            'symbol' => 'ZZZZZZZZZZ',
+            'name' => 'Competence Domain Unit Test',
+            'fk_course_plan' => $coursePlanId,
+            'id' => 0
+        );
+
+        $competenceDomainId = \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
+        
+        // Insert a new operational competence linked to the inserted competence domain
+        $operationalCompetence = array(
+            'id' => 0,
+            'symbol' => 'ZZZZZZZZZZ',
+            'name' => 'Operational Competence Unit Test',
+            'methodologic' => 'Operational Competence Unit Test',
+            'social' => 'Operational Competence Unit Test',
+            'personal' => 'Operational Competence Unit Test',
+            'fk_competence_domain' => $competenceDomainId
+        );
+
+        $operationalCompetenceId = \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
+        
+        // Insert a new objective linked to the inserted operational competence
+        $objective = array(
+            'symbol' => 'ZZZZZZZZZZ',
+            'taxonomy' => 99999,
+            'name' => 'Objective Unit Test',
+            'fk_operational_competence' => $operationalCompetenceId
+        );
+
+        $objectiveId = \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+
+        // Execute delete_course_plan method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_course_plan', $coursePlanId, 1);
+
+        // Delete disabled objective
+        \Plafor\Models\ObjectiveModel::getInstance()->delete($objectiveId, TRUE);
+
+        // Delete disabled operational competence
+        \Plafor\Models\OperationalCompetenceModel::getInstance()->delete($operationalCompetenceId, TRUE);
+
+        // Delete disabled competence domain
+        \Plafor\Models\CompetenceDomainModel::getInstance()->delete($competenceDomainId, TRUE);
+
+        // Delete disabled course plan
+        \Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/courseplan/list_course_plan'));
     }
 }

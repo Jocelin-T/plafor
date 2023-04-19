@@ -124,7 +124,7 @@ class CoursePlan extends \App\Controllers\BaseController
 
                     count($objectiveIds) > 0 ? ObjectiveModel::getInstance()->whereIn('id', $objectiveIds)->delete() : null;
                     count($competenceDomainIds) > 0 ? OperationalCompetenceModel::getInstance()->whereIn('fk_competence_domain', $competenceDomainIds)->delete() : null;
-                    CompetenceDomainModel::getInstance()->where('fk_course_plan', $course_plan_id);
+                    CompetenceDomainModel::getInstance()->where('fk_course_plan', $course_plan_id)->delete();
                     CoursePlanModel::getInstance()->delete($course_plan_id, FALSE);
                     return redirect()->to(base_url('plafor/courseplan/list_course_plan'));
                 case 3:
