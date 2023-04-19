@@ -61,7 +61,6 @@ return [
     'title_objective_new'    => 'Ajouter un objectif',
 
     //User course
-    'title_user_course_delete'  => 'Supprimer un cours',
     'title_user_course_view'  => 'Détails du cours',
     'title_user_course_plan_link' => 'Ajouter un cours associé',
 
