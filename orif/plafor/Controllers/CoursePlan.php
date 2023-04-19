@@ -379,7 +379,7 @@ class CoursePlan extends \App\Controllers\BaseController
                     /**@todo delete course plan
                      * **/
                     AcquisitionStatusModel::getInstance()->where('fk_user_course', $user_course_id)->delete();
-                    UserCourseModel::getInstance()->delete($user_course_id, false);
+                    UserCourseModel::getInstance()->delete($user_course_id, TRUE);
                     return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
                 default: // Do nothing
                     return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
