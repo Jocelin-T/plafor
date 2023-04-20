@@ -18,6 +18,9 @@
 {
     use ControllerTestTrait;
 
+    const TRAINER_USER_TYPE = 2;
+    const APPRENTICE_USER_TYPE = 3;
+
     /**
      * Asserts that the default index route redirects to login route (no session)
      */
@@ -227,6 +230,38 @@
     }
 
     /**
+     * Asserts that the view_apprentice page is loaded correctly when an apprentice id is given (for a development trainer session)
+     */
+    public function testview_apprenticeWithApprenticeIdForDevelopmentTrainerSession()
+    {
+        // Initialize session for a development trainer
+        $_SESSION['logged_in'] = true;
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+        $_SESSION['user_id'] = 2;
+
+        // Execute view_apprentice method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('view_apprentice', 4);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Détail de l\'apprenti', 'p');
+        $result->assertSee('ApprentiDev', 'span');
+        $result->assertSeeLink('FormateurDev');
+        $result->assertSeeLink('Ajouter un formateur');
+        $result->assertSeeElement('#usercourseSelector');
+        $result->assertSee(' Informaticien/-ne CFC Développement d\'applications', 'option');
+        $result->assertSee('09.07.2020', '.user-course-details-begin-date');
+        $result->assertSee('En cours', '.user-course-details-status');
+        $result->assertSee('Avancement du plan de formation', 'p');
+        $result->assertSee(' Informaticien/-ne CFC Développement d\'applications', '.font-weight-bold user-course-details-course-plan-name');
+    }
+
+    /**
      * Asserts that the save_user_course page redirects to the 403 error view when no session user access is set
      */
     public function testsave_user_courseWithoutSessionUserAccess()
@@ -348,6 +383,54 @@
     }
 
     /**
+     * Asserts that the save_user_course page redirects to the view_apprentice view when an apprentice id is given for a new user course (inserting an user course and acquisition statuses)
+     */
+    public function testsave_user_coursePostedWithTrainerSessionWithApprenticeIdAndNewUserCourse()
+    {
+        $userId = 4;
+        $coursePlanId = 2;
+
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['course_plan'] = $coursePlanId;
+        $_REQUEST['course_plan'] = $coursePlanId;
+        $_POST['status'] = 1;
+        $_REQUEST['status'] = 1;
+        $_POST['date_begin'] = '2023-04-20';
+        $_REQUEST['date_begin'] = '2023-04-20';
+        $_POST['date_end'] = '0000-00-00';
+        $_REQUEST['date_end'] = '0000-00-00';
+
+        // Execute save_user_course method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('save_user_course', $userId);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+        
+        // Get user course from database
+        $userCourseDb = \Plafor\Models\UserCourseModel::getInstance()->where("fk_user ", $userId)->where("fk_course_plan", $coursePlanId)->first();
+
+        // Delete acquisition statuses linked to the inserted user course
+        \Plafor\Models\AcquisitionStatusModel::getInstance()->where('fk_user_course', $userCourseDb['id'])->delete();
+
+        // Delete inserted user course        
+        \Plafor\Models\UserCourseModel::getInstance()->delete($userCourseDb['id'], TRUE);
+
+        // Assertions
+         $response = $result->response();
+         $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+         $this->assertEmpty($response->getBody());
+         $result->assertOK();
+         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+         $result->assertRedirectTo(base_url('plafor/apprentice/view_apprentice/' . $userId));
+    }
+
+    /**
      * Asserts that the save_apprentice_link page redirects to the base url when an apprentice session is set
      */
     public function testsave_apprentice_linkWithApprenticeSession()
@@ -411,7 +494,7 @@
     }
 
     /**
-     * Asserts that the save_apprentice_link page is loaded correctly when no limk between apprentice and trainer is provided
+     * Asserts that the save_apprentice_link page is loaded correctly when no link between apprentice and trainer is provided
      */
     public function testsave_apprentice_linkWithTrainerSessionWithApprenticeId()
     {
@@ -444,16 +527,30 @@
     }
 
     /**
-     * Asserts that the save_apprentice_link page is loaded correctly when a limk between apprentice and trainer is provided
+     * Asserts that the save_apprentice_link page is loaded correctly when a link between apprentice and trainer is provided
      */
     public function testsave_apprentice_linkWithTrainerSessionWithApprenticeIdAndLinkId()
     {
+        $apprenticeId = 4;
+        $trainerId = 2;
+
         // Initialize session
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
 
+        // Insert apprentice link 
+        $apprenticeLink = array(
+            'fk_trainer' => $trainerId,
+            'fk_apprentice' => $apprenticeId,
+        );
+
+        $apprenticeLinkId = \Plafor\Models\TrainerApprenticeModel::getInstance()->insert($apprenticeLink);
+
         // Execute save_apprentice_link method of Apprentice class
         $result = $this->controller(Apprentice::class)
-        ->execute('save_apprentice_link', 4, 1);
+        ->execute('save_apprentice_link', $apprenticeId, $apprenticeLinkId);
+
+        // Delete inserted link
+        \Plafor\Models\TrainerApprenticeModel::getInstance()->delete($apprenticeLinkId, TRUE);
 
         // Assertions
         $response = $result->response();
@@ -474,6 +571,147 @@
         $result->assertSee('FormateurOperateur', 'option');
         $result->assertSeeLink('Annuler');
         $result->assertSeeInField('save', 'Enregistrer');
+    }
+
+    /**
+     * Asserts that the save_apprentice_link page redirects to the view_apprentice view when inserting a new link between and apprentice and a trainer
+     */
+    public function testsave_apprentice_linkPostedWithTrainerSessionAndApprenticeId()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+
+        // Insert new apprentice user       
+        $apprentice = array(
+            'fk_user_type' => self::APPRENTICE_USER_TYPE,
+            'username' => 'ApprenticeUnitTest',
+            'password' => password_hash('ApprenticeUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        $apprenticeId = \User\Models\User_model::getInstance()->insert($apprentice);
+
+        // Insert new trainer user
+        $trainer = array(
+            'fk_user_type' => self::TRAINER_USER_TYPE,
+            'username' => 'TrainerUnitTest',
+            'password' => password_hash('TrainerUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        $trainerId = \User\Models\User_model::getInstance()->insert($trainer);
+
+        // Prepare the POST request 
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['trainer'] = $trainerId;
+        $_REQUEST['trainer'] = $trainerId;
+        $_POST['apprentice'] = $apprenticeId;
+        $_REQUEST['apprentice'] = $apprenticeId;
+
+        // Execute save_apprentice_link method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('save_apprentice_link', $apprenticeId);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Get inserted apprentice link from database
+        $apprenticeLink = \Plafor\Models\TrainerApprenticeModel::getInstance()->where("fk_trainer ", $trainerId)->where("fk_apprentice", $apprenticeId)->first();
+
+        // Delete inserted apprentice link
+        \Plafor\Models\TrainerApprenticeModel::getInstance()->delete($apprenticeLink['id'], TRUE);
+
+        // Delete inserted apprentice
+        \User\Models\User_model::getInstance()->delete($apprenticeId, TRUE);
+
+        // Delete inserted trainer
+        \User\Models\User_model::getInstance()->delete($trainerId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/view_apprentice/' . $apprenticeId));
+    }
+
+    /**
+     * Asserts that the save_apprentice_link page redirects to the view_apprentice view when updating a new link between and apprentice and a trainer
+     */
+    public function testsave_apprentice_linkPostedWithTrainerSessionAndApprenticeIdUpdate()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+
+        // Insert new apprentice user       
+        $apprentice = array(
+            'fk_user_type' => self::APPRENTICE_USER_TYPE,
+            'username' => 'ApprenticeUnitTest',
+            'password' => password_hash('ApprenticeUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        $apprenticeId = \User\Models\User_model::getInstance()->insert($apprentice);
+
+        // Insert new trainer user
+        $trainer = array(
+            'fk_user_type' => self::TRAINER_USER_TYPE,
+            'username' => 'TrainerUnitTest',
+            'password' => password_hash('TrainerUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        $trainerId = \User\Models\User_model::getInstance()->insert($trainer);
+
+        // Insert new second trainer user
+        $trainer2 = array(
+            'fk_user_type' => self::TRAINER_USER_TYPE,
+            'username' => 'Trainer2UnitTest',
+            'password' => password_hash('TrainerUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        $trainer2Id = \User\Models\User_model::getInstance()->insert($trainer2);
+
+        // Insert apprentice link 
+        $apprenticeLink = array(
+            'fk_trainer' => $trainerId,
+            'fk_apprentice' => $apprenticeId,
+        );
+
+        $apprenticeLinkId = \Plafor\Models\TrainerApprenticeModel::getInstance()->insert($apprenticeLink);
+
+        // Prepare the POST request 
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['trainer'] = $trainer2Id;
+        $_REQUEST['trainer'] = $trainer2Id;
+        $_POST['apprentice'] = $apprenticeId;
+        $_REQUEST['apprentice'] = $apprenticeId;
+
+        // Execute save_apprentice_link method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('save_apprentice_link', $apprenticeId, $apprenticeLinkId);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Delete inserted and updated apprentice link
+        \Plafor\Models\TrainerApprenticeModel::getInstance()->delete($apprenticeLinkId, TRUE);
+
+        // Delete inserted apprentice
+        \User\Models\User_model::getInstance()->delete($apprenticeId, TRUE);
+
+        // Delete inserted trainer
+        \User\Models\User_model::getInstance()->delete($trainerId, TRUE);
+
+        // Delete second inserted trainer
+        \User\Models\User_model::getInstance()->delete($trainer2Id, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/view_apprentice/' . $apprenticeId));
     }
 
     /**
@@ -501,17 +739,31 @@
     }
 
     /**
-     * Asserts that the delete_apprentice_link page (confirmation message) is loaded correctly
+     * Asserts that the delete_apprentice_link page (confirmation message) is loaded correctly (trainer session and default action)
      */
-    public function testdelete_apprentice_linkWithTrainerSession()
+    public function testdelete_apprentice_linkWithTrainerSessionAndDefaultAction()
     {
+        $apprenticeId = 4;
+        $trainerId = 2;
+
         // Initialize session
         $_SESSION['_ci_previous_url'] = 'url';
-        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;     
+
+        // Insert apprentice link 
+        $apprenticeLink = array(
+            'fk_trainer' => $trainerId,
+            'fk_apprentice' => $apprenticeId,
+        );
+
+        $apprenticeLinkId = \Plafor\Models\TrainerApprenticeModel::getInstance()->insert($apprenticeLink);
 
         // Execute delete_apprentice_link method of Apprentice class
         $result = $this->controller(Apprentice::class)
-        ->execute('delete_apprentice_link', 1);
+        ->execute('delete_apprentice_link', $apprenticeLinkId);
+
+        // Delete inserted link
+        \Plafor\Models\TrainerApprenticeModel::getInstance()->delete($apprenticeLinkId, TRUE);
 
         // Assertions
         $response = $result->response();
@@ -525,6 +777,96 @@
         $result->assertSee('Toutes les informations concernant le lien entre cet apprenti et ce formateur seront désactivées.', 'div');
         $result->assertSeeLink('Annuler');
         $result->assertSeeLink('Désactiver');
+    }
+
+    /**
+     * Asserts that the delete_apprentice_link redirects to the list_apprentice view (trainer session and fake action) 
+     */
+    public function testdelete_apprentice_linkWithTrainerSessionAndFakeAction()
+    {
+        $apprenticeId = 4;
+        $trainerId = 2;
+
+        // Initialize session
+        $_SESSION['_ci_previous_url'] = 'url';
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+
+        // Insert apprentice link 
+        $apprenticeLink = array(
+            'fk_trainer' => $trainerId,
+            'fk_apprentice' => $apprenticeId,
+        );
+
+        $apprenticeLinkId = \Plafor\Models\TrainerApprenticeModel::getInstance()->insert($apprenticeLink);
+        
+        // Execute delete_apprentice_link method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('delete_apprentice_link', $apprenticeLinkId, 9);
+
+        // Delete inserted link
+        \Plafor\Models\TrainerApprenticeModel::getInstance()->delete($apprenticeLinkId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/list_apprentice/' . $apprenticeId));
+    }
+
+    /**
+     * Asserts that the delete_apprentice_link redirects to the list_apprentice view (trainer session and delete action) 
+     */
+    public function testdelete_apprentice_linkWithTrainerSessionAndDeleteAction()
+    {
+        // Initialize session
+        $_SESSION['_ci_previous_url'] = 'url';
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+
+        // Insert new apprentice user       
+        $apprentice = array(
+            'fk_user_type' => self::APPRENTICE_USER_TYPE,
+            'username' => 'ApprenticeUnitTest',
+            'password' => password_hash('ApprenticeUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        $apprenticeId = \User\Models\User_model::getInstance()->insert($apprentice);
+
+        // Insert new trainer user
+        $trainer = array(
+            'fk_user_type' => self::TRAINER_USER_TYPE,
+            'username' => 'TrainerUnitTest',
+            'password' => password_hash('TrainerUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        $trainerId = \User\Models\User_model::getInstance()->insert($trainer);
+
+        // Insert apprentice link 
+        $apprenticeLink = array(
+            'fk_trainer' => $trainerId,
+            'fk_apprentice' => $apprenticeId,
+        );
+
+        $apprenticeLinkId = \Plafor\Models\TrainerApprenticeModel::getInstance()->insert($apprenticeLink);
+
+        // Execute delete_apprentice_link method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('delete_apprentice_link', $apprenticeLinkId, 1);
+
+        // Delete inserted apprentice
+        \User\Models\User_model::getInstance()->delete($apprenticeId, TRUE);
+
+        // Delete inserted trainer
+        \User\Models\User_model::getInstance()->delete($trainerId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/list_apprentice/' . $apprenticeId));
     }
 
     /**
@@ -702,6 +1044,44 @@
         $result->assertSee('Autonome', 'option');
         $result->assertSeeLink('Annuler');
         $result->assertSeeInField('save', 'Enregistrer');
+    }
+
+    /**
+     * Asserts that the save_acquisition_status function returns a status code 200 when a status id is provided with a new level (development apprentice session)
+     */
+    public function testsave_acquisition_statusPostedWithStatusIdAndNewLevelWithDevelopmentApprenticeSession()
+    {
+        $acquisitionStatusId = 1;
+        $acquisitionLevel = 1;
+
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_guest;
+        $_SESSION['user_id'] = 4;
+
+        // Prepare the POST request 
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['field_acquisition_level'] = 3;
+        $_REQUEST['field_acquisition_level'] = 3;
+
+        // Execute save_acquisition_status method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('save_acquisition_status', $acquisitionStatusId);        // Acquisition status linked to user course linked to development apprentice
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Reset acquisition status level
+        $acquisitionStatus = [
+            'fk_acquisition_level' => $acquisitionLevel
+        ];
+        \Plafor\Models\AcquisitionStatusModel::getInstance()->update($acquisitionStatusId, $acquisitionStatus);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertStatusCode(200);
     }
 
     /**
@@ -1065,6 +1445,43 @@
         $result->assertSee('Statuts d\'acquisition des objectifs', 'p');
         $result->assertSeeLink('A.1.1');
         $result->assertSeeLink('Etre capable de recevoir, comprendre, planifier et mettre en œuvre un mandat client (organisation, méthodologie, ergonomie, optimisation de l’énergie)');
+        $result->assertSeeLink('Modifer la formation');
+        $result->assertSeeLink('Supprimer la formation');
+    }
+
+    /**
+     * Asserts that view_user_course page is loaded correctly when an user course id is given for a given system apprentice and a given operational competence (connexion with an administrator account)
+     */
+    public function testview_user_courseWithUserCourseIdLinkedToASystemApprenticeWithAdministratorAccountForAGivenOperationalCompetence()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+        $_SESSION['user_id'] = 1;
+
+        // Prepare the GET request
+        $_SERVER['REQUEST_METHOD'] = 'get';
+        $_GET['operationalCompetenceId'] = 43;
+        $_REQUEST['operationalCompetenceId'] = 43;
+
+        // Execute view_user_course method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('view_user_course', 2);
+
+        // Reset $_GET and $_REQUEST variables
+        $_GET = array();
+        $_REQUEST = array();
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Détail de la formation de l\'apprenti', 'p');
+        $result->assertSeeLink('ApprentiSysteme');
+        $result->assertSee('Statuts d\'acquisition des objectifs', 'p');
+        $result->assertSeeLink('A.2.5');
+        $result->assertSeeLink('Tester et documenter la configuration/disponibilité et la fonctionnalité des nouveaux matériels et logiciels installés');
         $result->assertSeeLink('Modifer la formation');
         $result->assertSeeLink('Supprimer la formation');
     }

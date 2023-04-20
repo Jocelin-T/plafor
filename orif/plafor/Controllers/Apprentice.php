@@ -153,8 +153,9 @@ class Apprentice extends \App\Controllers\BaseController
      */
     public function save_user_course($id_apprentice = null, $id_user_course = 0){
         if ($this->session->get('user_access')>=config('\User\Config\UserConfig')->access_lvl_trainer) {
+            $userCourseModel = new UserCourseModel();
             $apprentice = User_model::getInstance()->find($id_apprentice);
-            $user_course = UserCourseModel::getInstance()->find($id_user_course);
+            $user_course = $userCourseModel->find($id_user_course);
 
             if ($id_apprentice == null || $apprentice['fk_user_type'] != User_type_model::getInstance()->where('name', lang('plafor_lang.title_apprentice'))->first()['id']) {
                 return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
@@ -172,10 +173,10 @@ class Apprentice extends \App\Controllers\BaseController
                 if ($id_user_course > 0) {
                     //update
                     //when we update the userCourse see if the courseplan is changed
-                    UserCourseModel::getInstance()->update($id_user_course, $user_course);
-                } else if (UserCourseModel::getInstance()->where('fk_user', $id_apprentice)->where('fk_course_plan', $fk_course_plan)->first() == null) {
+                    $userCourseModel->update($id_user_course, $user_course);
+                } else if ($userCourseModel->where('fk_user', $id_apprentice)->where('fk_course_plan', $fk_course_plan)->first() == null) {
                     //insert
-                    $id_user_course = UserCourseModel::getInstance()->insert($user_course);
+                    $id_user_course = $userCourseModel->insert($user_course);
 
                     $course_plan = UserCourseModel::getCoursePlan($user_course['fk_course_plan']);
                     $competenceDomainIds = [];
@@ -206,7 +207,7 @@ class Apprentice extends \App\Controllers\BaseController
                         AcquisitionStatusModel::getInstance()->insert($acquisition_status);
                     }
                 }
-                if (UserCourseModel::getInstance()->errors() == null) {
+                if ($userCourseModel->errors() == null) {
                     //if ok
                     return redirect()->to(base_url('plafor/apprentice/view_apprentice/' . $id_apprentice));
                 }
@@ -224,7 +225,7 @@ class Apprentice extends \App\Controllers\BaseController
                 'user_course' => $user_course,
                 'status' => $status,
                 'apprentice' => $apprentice,
-                'errors' => UserCourseModel::getInstance()->errors()
+                'errors' => $userCourseModel->errors()
             );
 
             return $this->display_view('Plafor\user_course/save', $output);
@@ -245,6 +246,7 @@ class Apprentice extends \App\Controllers\BaseController
     public function save_apprentice_link($id_apprentice = null, $id_link = null){
 
         $apprentice = User_model::getInstance()->find($id_apprentice);
+        $trainerApprenticeModel = new TrainerApprenticeModel();
 
         if($_SESSION['user_access'] < config('\User\Config\UserConfig')->access_lvl_trainer
             || $id_apprentice == null
@@ -258,21 +260,21 @@ class Apprentice extends \App\Controllers\BaseController
                 'fk_trainer' => $this->request->getPost('trainer'),
                 'fk_apprentice' => $this->request->getPost('apprentice'),
             );
-            $old_link = TrainerApprenticeModel::getInstance()->where('fk_trainer',$apprentice_link['fk_trainer'])->where('fk_apprentice',$apprentice_link['fk_apprentice'])->first();
-            if ($id_link != null) {
-                if (!is_null($old_link)) {
-                    // Delete the old link instead of deleting the one being changed
-                    // It's easier that way
-                    TrainerApprenticeModel::getInstance()->delete($id_link);
-                } else {
-                    TrainerApprenticeModel::getInstance()->update($id_link,$apprentice_link);
-                }
-            } elseif (is_null($old_link)) {
-                // Don't insert a new link that is the same as an old one
-                TrainerApprenticeModel::getInstance()->insert($apprentice_link);
-            }
+            $old_link = $trainerApprenticeModel->where('fk_trainer',$apprentice_link['fk_trainer'])->where('fk_apprentice',$apprentice_link['fk_apprentice'])->first();
 
-            if(TrainerApprenticeModel::getInstance()->errors()==null){
+            // Insert or update the link only if it does not already exist
+            if (is_null($old_link))
+            {
+                if ($id_link != null) {
+                    // Update the existing link
+                    $trainerApprenticeModel->update($id_link, $apprentice_link);
+                } else {
+                    // Insert a new link
+                    $trainerApprenticeModel->insert($apprentice_link);
+                }
+            }         
+
+            if ($trainerApprenticeModel->errors() == null){
                 //ok
                 // This is used to prevent an apprentice from being linked to the same person twice
                 return redirect()->to(base_url("plafor/apprentice/view_apprentice/{$id_apprentice}"));
@@ -290,14 +292,14 @@ class Apprentice extends \App\Controllers\BaseController
             $trainers[$trainer['id']] = $trainer['username'];
         }
 
-        $link = $id_link==null?null:TrainerApprenticeModel::getInstance()->find($id_link);
+        $link = $id_link==null?null:$trainerApprenticeModel->find($id_link);
 
         $output = array(
             'title'=>lang('plafor_lang.title_save_apprentice_link'),
             'apprentice' => $apprentice,
             'trainers' => $trainers,
             'link' => $link,
-            'errors'=>TrainerApprenticeModel::getInstance()->errors()
+            'errors'=> $trainerApprenticeModel->errors()
         );
 
         $this->display_view('Plafor\apprentice/link',$output);
@@ -378,7 +380,8 @@ class Apprentice extends \App\Controllers\BaseController
      * @return void
      */
     public function save_acquisition_status($acquisition_status_id = 0) {
-        $acquisitionStatus = AcquisitionStatusModel::getInstance()->find($acquisition_status_id);
+        $acquisitionStatusModel = new AcquisitionStatusModel();
+        $acquisitionStatus = $acquisitionStatusModel->find($acquisition_status_id);
 
         if (is_null($acquisitionStatus)) {
             return redirect()->to(base_url('plafor/apprentice/list_apprentice'));
@@ -402,9 +405,9 @@ class Apprentice extends \App\Controllers\BaseController
             $acquisitionStatus = [
                 'fk_acquisition_level' => $acquisitionLevel
             ];
-            AcquisitionStatusModel::getInstance()->update($acquisition_status_id, $acquisitionStatus);
+            $acquisitionStatusModel->update($acquisition_status_id, $acquisitionStatus);
 
-            if (AcquisitionStatusModel::getInstance()->errors()==null) {
+            if ($acquisitionStatusModel->errors()==null) {
                 //if ok
                 return $this->response->setStatusCode(200,'OK');
             }
@@ -415,7 +418,7 @@ class Apprentice extends \App\Controllers\BaseController
             'acquisition_levels' => $acquisitionLevels,
             'acquisition_level' => $acquisitionStatus['fk_acquisition_level'],
             'id' => $acquisition_status_id,
-            'errors'=> AcquisitionStatusModel::getInstance()->errors()
+            'errors'=> $acquisitionStatusModel->errors()
         ];
 
         return $this->display_view('Plafor\acquisition_status/save', $output);
