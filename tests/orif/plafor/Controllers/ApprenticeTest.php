@@ -538,12 +538,7 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
 
         // Insert apprentice link 
-        $apprenticeLink = array(
-            'fk_trainer' => $trainerId,
-            'fk_apprentice' => $apprenticeId,
-        );
-
-        $apprenticeLinkId = \Plafor\Models\TrainerApprenticeModel::getInstance()->insert($apprenticeLink);
+        $apprenticeLinkId = self::insertTrainerApprenticeLink($trainerId, $apprenticeId);
 
         // Execute save_apprentice_link method of Apprentice class
         $result = $this->controller(Apprentice::class)
@@ -582,22 +577,10 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
 
         // Insert new apprentice user       
-        $apprentice = array(
-            'fk_user_type' => self::APPRENTICE_USER_TYPE,
-            'username' => 'ApprenticeUnitTest',
-            'password' => password_hash('ApprenticeUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $apprenticeId = \User\Models\User_model::getInstance()->insert($apprentice);
+        $apprenticeId = self::insertApprentice();
 
         // Insert new trainer user
-        $trainer = array(
-            'fk_user_type' => self::TRAINER_USER_TYPE,
-            'username' => 'TrainerUnitTest',
-            'password' => password_hash('TrainerUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $trainerId = \User\Models\User_model::getInstance()->insert($trainer);
+        $trainerId = self::insertTrainer('TrainerUnitTest');
 
         // Prepare the POST request 
         $_SERVER['REQUEST_METHOD'] = 'post';
@@ -644,39 +627,16 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
 
         // Insert new apprentice user       
-        $apprentice = array(
-            'fk_user_type' => self::APPRENTICE_USER_TYPE,
-            'username' => 'ApprenticeUnitTest',
-            'password' => password_hash('ApprenticeUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $apprenticeId = \User\Models\User_model::getInstance()->insert($apprentice);
+        $apprenticeId = self::insertApprentice();
 
         // Insert new trainer user
-        $trainer = array(
-            'fk_user_type' => self::TRAINER_USER_TYPE,
-            'username' => 'TrainerUnitTest',
-            'password' => password_hash('TrainerUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $trainerId = \User\Models\User_model::getInstance()->insert($trainer);
+        $trainerId = self::insertTrainer('TrainerUnitTest');
 
         // Insert new second trainer user
-        $trainer2 = array(
-            'fk_user_type' => self::TRAINER_USER_TYPE,
-            'username' => 'Trainer2UnitTest',
-            'password' => password_hash('TrainerUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $trainer2Id = \User\Models\User_model::getInstance()->insert($trainer2);
+        $trainer2Id = self::insertTrainer('Trainer2UnitTest');
 
         // Insert apprentice link 
-        $apprenticeLink = array(
-            'fk_trainer' => $trainerId,
-            'fk_apprentice' => $apprenticeId,
-        );
-
-        $apprenticeLinkId = \Plafor\Models\TrainerApprenticeModel::getInstance()->insert($apprenticeLink);
+        $apprenticeLinkId = self::insertTrainerApprenticeLink($trainerId, $apprenticeId);
 
         // Prepare the POST request 
         $_SERVER['REQUEST_METHOD'] = 'post';
@@ -751,12 +711,7 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;     
 
         // Insert apprentice link 
-        $apprenticeLink = array(
-            'fk_trainer' => $trainerId,
-            'fk_apprentice' => $apprenticeId,
-        );
-
-        $apprenticeLinkId = \Plafor\Models\TrainerApprenticeModel::getInstance()->insert($apprenticeLink);
+        $apprenticeLinkId = self::insertTrainerApprenticeLink($trainerId, $apprenticeId);
 
         // Execute delete_apprentice_link method of Apprentice class
         $result = $this->controller(Apprentice::class)
@@ -792,12 +747,7 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
 
         // Insert apprentice link 
-        $apprenticeLink = array(
-            'fk_trainer' => $trainerId,
-            'fk_apprentice' => $apprenticeId,
-        );
-
-        $apprenticeLinkId = \Plafor\Models\TrainerApprenticeModel::getInstance()->insert($apprenticeLink);
+        $apprenticeLinkId = self::insertTrainerApprenticeLink($trainerId, $apprenticeId);
         
         // Execute delete_apprentice_link method of Apprentice class
         $result = $this->controller(Apprentice::class)
@@ -825,30 +775,13 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
 
         // Insert new apprentice user       
-        $apprentice = array(
-            'fk_user_type' => self::APPRENTICE_USER_TYPE,
-            'username' => 'ApprenticeUnitTest',
-            'password' => password_hash('ApprenticeUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $apprenticeId = \User\Models\User_model::getInstance()->insert($apprentice);
+        $apprenticeId = self::insertApprentice();
 
         // Insert new trainer user
-        $trainer = array(
-            'fk_user_type' => self::TRAINER_USER_TYPE,
-            'username' => 'TrainerUnitTest',
-            'password' => password_hash('TrainerUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $trainerId = \User\Models\User_model::getInstance()->insert($trainer);
+        $trainerId = self::insertTrainer('TrainerUnitTest');
 
         // Insert apprentice link 
-        $apprenticeLink = array(
-            'fk_trainer' => $trainerId,
-            'fk_apprentice' => $apprenticeId,
-        );
-
-        $apprenticeLinkId = \Plafor\Models\TrainerApprenticeModel::getInstance()->insert($apprenticeLink);
+        $apprenticeLinkId = self::insertTrainerApprenticeLink($trainerId, $apprenticeId);
 
         // Execute delete_apprentice_link method of Apprentice class
         $result = $this->controller(Apprentice::class)
@@ -1075,6 +1008,7 @@
         $acquisitionStatus = [
             'fk_acquisition_level' => $acquisitionLevel
         ];
+
         \Plafor\Models\AcquisitionStatusModel::getInstance()->update($acquisitionStatusId, $acquisitionStatus);
 
         // Assertions
@@ -1146,6 +1080,149 @@
         $result->assertSeeElement('#comment');
         $result->assertSeeLink('Annuler');
         $result->assertSeeInField('save', 'Enregistrer');
+    }
+
+    /**
+     * Asserts that the add_comment page redirects to the view_acquisition_status view when a status id is provided for a trainer session (inserting a new comment)
+     */
+    public function testadd_commenPostedtWithStatusIdWithTrainerSession()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+        $_SESSION['user_id'] = 2;
+
+        // Insert a new course plan
+        $coursePlanId = self::insertCoursePlan();
+
+        // Insert a new competence domain linked to the inserted course plan
+        $competenceDomainId = self::insertCompetenceDomain($coursePlanId);
+        
+        // Insert a new operational competence linked to the inserted competence domain
+        $operationalCompetenceId = self::insertOperationalCompetence($competenceDomainId);
+        
+        // Insert a new objective linked to the inserted operational competence
+        $objectiveId = self::insertObjective($operationalCompetenceId);
+
+        // Insert a new user course linked to the inserted course plan
+        $userCourseId = self::insertUserCourse($coursePlanId);
+
+        // Insert a new acquisition status linked to the inserted objective and to the inserted user course
+        $acquisitionStatusId = self::insertAcquisitionStatus($objectiveId, $userCourseId);
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['comment'] = 'Comment Unit Test';
+        $_REQUEST['comment'] = 'Comment Unit Test';
+
+        // Execute add_comment method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('add_comment', $acquisitionStatusId);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Delete inserted comment
+        \Plafor\Models\CommentModel::getInstance()->where('comment', 'Comment Unit Test')->delete();
+
+        // Delete inserted acquisition status
+        \Plafor\Models\AcquisitionStatusModel::getInstance()->delete($acquisitionStatusId, TRUE);
+
+        // Delete inserted user course
+        \Plafor\Models\UserCourseModel::getInstance()->delete($userCourseId, TRUE);
+
+        // Delete inserted objective
+        \Plafor\Models\ObjectiveModel::getInstance()->delete($objectiveId, TRUE);
+
+        // Delete inserted operational competence
+        \Plafor\Models\OperationalCompetenceModel::getInstance()->delete($operationalCompetenceId, TRUE);
+
+        // Delete inserted competence domain
+        \Plafor\Models\CompetenceDomainModel::getInstance()->delete($competenceDomainId, TRUE);
+
+        // Delete inserted course plan
+        \Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/view_acquisition_status/' . $acquisitionStatusId));
+    }
+
+    /**
+     * Asserts that the add_comment page redirects to the view_acquisition_status view when a status id is provided for a trainer session (updating an existing comment)
+     */
+    public function testadd_commenPostedtWithStatusIdWithTrainerSessionAndExistingComment()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+        $_SESSION['user_id'] = 2;
+
+        // Insert a new course plan
+        $coursePlanId = self::insertCoursePlan();
+
+        // Insert a new competence domain linked to the inserted course plan
+        $competenceDomainId = self::insertCompetenceDomain($coursePlanId);
+        
+        // Insert a new operational competence linked to the inserted competence domain
+        $operationalCompetenceId = self::insertOperationalCompetence($competenceDomainId);
+        
+        // Insert a new objective linked to the inserted operational competence
+        $objectiveId = self::insertObjective($operationalCompetenceId);
+
+        // Insert a new user course linked to the inserted course plan
+        $userCourseId = self::insertUserCourse($coursePlanId);
+
+        // Insert a new acquisition status linked to the inserted objective and to the inserted user course
+        $acquisitionStatusId = self::insertAcquisitionStatus($objectiveId, $userCourseId);
+
+        // Insert a new comment linked to the inserted acquisition status
+        $commentId = self::insertComment($acquisitionStatusId);
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['comment'] = 'Comment Update Unit Test';
+        $_REQUEST['comment'] = 'Comment Udpdate Unit Test';
+
+        // Execute add_comment method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('add_comment', $acquisitionStatusId, $commentId);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Delete inserted comment
+        \Plafor\Models\CommentModel::getInstance()->delete($commentId, TRUE);
+
+        // Delete inserted acquisition status
+        \Plafor\Models\AcquisitionStatusModel::getInstance()->delete($acquisitionStatusId, TRUE);
+
+        // Delete inserted user course
+        \Plafor\Models\UserCourseModel::getInstance()->delete($userCourseId, TRUE);
+
+        // Delete inserted objective
+        \Plafor\Models\ObjectiveModel::getInstance()->delete($objectiveId, TRUE);
+
+        // Delete inserted operational competence
+        \Plafor\Models\OperationalCompetenceModel::getInstance()->delete($operationalCompetenceId, TRUE);
+
+        // Delete inserted competence domain
+        \Plafor\Models\CompetenceDomainModel::getInstance()->delete($competenceDomainId, TRUE);
+
+        // Delete inserted course plan
+        \Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('plafor/apprentice/view_acquisition_status/' . $acquisitionStatusId));
     }
 
     /**
@@ -1643,5 +1720,143 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('plafor/apprentice/view_acquisition_status/1'));
+    }
+
+    /**
+     * Insert a course plan into database
+     */
+    private static function insertCoursePlan() {
+        $coursePlan = array(
+            'formation_number' => 12345,
+            'official_name' => 'Course Plan Unit Test',
+            'date_begin' => '2023-04-05'
+        );
+
+        return \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
+    }
+
+    /**
+     * Insert a competence domain linked to a course plan into database
+     */
+    private static function insertCompetenceDomain($coursePlanId) {
+        $competenceDomain = array(
+            'symbol' => 'ZZZZZZZZZZ',
+            'name' => 'Competence Domain Unit Test',
+            'fk_course_plan' => $coursePlanId,
+            'id' => 0
+        );
+
+        return \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
+    }
+
+    /**
+     * Insert an operational competence linked to a competence domain into database
+     */
+    private static function insertOperationalCompetence($competenceDomainId) {
+        $operationalCompetence = array(
+            'id' => 0,
+            'symbol' => 'ZZZZZZZZZZ',
+            'name' => 'Operational Competence Unit Test',
+            'methodologic' => 'Operational Competence Unit Test',
+            'social' => 'Operational Competence Unit Test',
+            'personal' => 'Operational Competence Unit Test',
+            'fk_competence_domain' => $competenceDomainId
+        );
+
+        return \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
+    }
+
+    /**
+     * Insert an objective linked to an operational competence into database
+     */
+    private static function insertObjective($operationalCompetenceId) {
+        $objective = array(
+            'symbol' => 'ZZZZZZZZZZ',
+            'taxonomy' => 99999,
+            'name' => 'Objective Unit Test',
+            'fk_operational_competence' => $operationalCompetenceId
+        );
+
+        return \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+    }
+
+    /**
+     * Insert an user course linked to a course plan into database
+     */
+    private static function insertUserCourse($coursePlanId) {
+        $userCourse = array(
+            'fk_user' => 4,
+            'fk_course_plan' => $coursePlanId,
+            'fk_status' => 1,
+            'date_begin' => '2023-04-19',
+            'date_end' => '0000-00-00',
+        );
+
+        return \Plafor\Models\UserCourseModel::getInstance()->insert($userCourse);
+    }
+
+    /**
+     * Insert an acquisition status linked to an objective and an user course into database
+     */
+    private static function insertAcquisitionStatus($objectiveId, $userCourseId) {
+        $acquisitionStatus = array(
+            'fk_objective' => $objectiveId,
+            'fk_user_course' => $userCourseId,
+            'fk_acquisition_level' => 1
+        );
+
+        return \Plafor\Models\AcquisitionStatusModel::getInstance()->insert($acquisitionStatus);
+    }
+
+    /**
+     * Insert a comment linked to an acquisition status into database
+     */
+    private static function insertComment($acquisitionStatusId) {
+        $comment = array(
+            'fk_trainer' => 2,
+            'fk_acquisition_status' => $acquisitionStatusId,
+            'comment' => 'Comment Unit Test',
+            'date_creation' => date('Y-m-d H:i:s'),
+        );
+
+        return \Plafor\Models\CommentModel::getInstance()->insert($comment);
+    }
+
+    /**
+     * Insert a link between a trainer and an apprentice into database
+     */
+    private static function insertTrainerApprenticeLink($trainerId, $apprenticeId) {
+        $apprenticeLink = array(
+            'fk_trainer' => $trainerId,
+            'fk_apprentice' => $apprenticeId,
+        );
+
+        return \Plafor\Models\TrainerApprenticeModel::getInstance()->insert($apprenticeLink);
+    }
+
+    /**
+     * Insert an apprentice into database
+     */
+    private static function insertApprentice() {
+        $apprentice = array(
+            'fk_user_type' => self::APPRENTICE_USER_TYPE,
+            'username' => 'ApprenticeUnitTest',
+            'password' => password_hash('ApprenticeUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        return \User\Models\User_model::getInstance()->insert($apprentice);
+    }
+
+    /**
+     * Insert a trainer into database
+     */
+    private static function insertTrainer($username) {
+        $trainer = array(
+            'fk_user_type' => self::TRAINER_USER_TYPE,
+            'username' => $username,
+            'password' => password_hash('TrainerUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        return \User\Models\User_model::getInstance()->insert($trainer);
     }
 }

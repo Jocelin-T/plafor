@@ -431,6 +431,7 @@ class Apprentice extends \App\Controllers\BaseController
         }
 
         $acquisition_status = AcquisitionStatusModel::getInstance()->find($acquisition_status_id);
+        $commentModel = new CommentModel();
 
         if (count($_POST) > 0) {
             $comment = array(
@@ -439,25 +440,26 @@ class Apprentice extends \App\Controllers\BaseController
                 'comment' => $this->request->getPost('comment'),
                 'date_creation' => date('Y-m-d H:i:s'),
             );
-            if($comment_id == null)
-                CommentModel::getInstance()->insert($comment);
-            else
-                CommentModel::getInstance()->update($comment_id, $comment);
+            if ($comment_id == null) {
+                $commentModel->insert($comment);
+            } else {
+                $commentModel->update($comment_id, $comment);
+            }
 
-            if (CommentModel::getInstance()->errors()==null) {
+            if ($commentModel->errors()==null) {
                 //if ok
                 return redirect()->to(base_url('plafor/apprentice/view_acquisition_status/'.$acquisition_status['id']));
             }
         }
 
-        $comment = CommentModel::getInstance()->find($comment_id);
+        $comment = $commentModel->find($comment_id);
 
         $output = array(
             'title'=>lang('plafor_lang.title_comment_save'),
             'acquisition_status' => $acquisition_status,
             'comment_id' => $comment_id,
             'commentValue' => ($comment['comment']??''),
-            'errors'    => CommentModel::getInstance()->errors()
+            'errors'    => $commentModel->errors()
         );
 
         return $this->display_view('\Plafor\comment/save',$output);
