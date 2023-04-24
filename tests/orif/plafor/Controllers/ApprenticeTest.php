@@ -909,6 +909,48 @@
     }
 
     /**
+     * Asserts that the view_acquisition_status page is loaded correctly when a status id is provided (trainer session) after inserting a temporary comment
+     */
+    public function testview_acquisition_statusWithStatusIdWithTrainerSessionAfterCommentInsert() 
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+
+        // Insert a new comment
+        $acquisitionStatusId = 1;
+        $commentId = self::insertComment($acquisitionStatusId);
+
+        // Execute view_acquisition_status method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('view_acquisition_status', $acquisitionStatusId);
+
+        // Delete inserted comment
+        \Plafor\Models\CommentModel::getInstance()->delete($commentId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Détail du statut d\'acquisition', 'p');
+        $result->assertSee('Symboles de l\'objectif', 'p');
+        $result->asserttSeeLink('A.1.1');
+        $result->assertSee('Nom de l\'objectif', 'p');
+        $result->asserttSeeLink('Enregistrer les besoins et discuter les solutions possibles, s’entretenir avec le client/supérieur sur les restrictions des exigences');
+        $result->assertSee('Taxonomie de l\'objectif', 'p');
+        $result->assertSeeLink('4');
+        $result->assertSee('Niveau d\'acquisition', 'p');
+        $result->assertSee('Non expliqué', 'p');
+        $result->assertSeeLink('Ajouter un commentaire');
+        $result->assertSee('Commentaire', 'th');
+        $result->assertSee('Créateur du commentaire', 'th');
+        $result->assertSee('Date de création du commentaire', 'th');
+        $result->assertSeeLink('Comment Unit Test');
+        $result->assertSee('FormateurDev', 'th');
+    }
+
+    /**
      * Asserts that the save_acquisition_status page redirects to the list_apprentice view when no status id is provided (no session)
      */
     public function testsave_acquisition_statusWithoutStatusIdWithoutSession() 
@@ -1016,6 +1058,49 @@
         $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
         $this->assertEmpty($response->getBody());
         $result->assertStatusCode(200);
+    }
+
+    /**
+     * Asserts that the save_acquisition_status function returns a status code 200 when a status id is provided with a new level (development apprentice session)
+     */
+    public function testsave_acquisition_statusPostedWithStatusIdAndNewLevelWithDevelopmentApprenticeSessionAndNonExistingStatusLevel()
+    {
+        $acquisitionStatusId = 1;
+
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_guest;
+        $_SESSION['user_id'] = 4;
+
+        // Prepare the POST request 
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['field_acquisition_level'] = 5;
+        $_REQUEST['field_acquisition_level'] = 5;
+
+        // Execute save_acquisition_status method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('save_acquisition_status', $acquisitionStatusId);        // Acquisition status linked to user course linked to development apprentice
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Modifier un statut d\'acquisition', 'h1');
+        $result->assertSeeElement('#edit_acquisition_status');
+        $result->assertSee('Le champ Niveau d\'acquisition doit être un élément de la liste suivante : 1,2,3,4.', 'div');
+        $result->assertSee('Niveau d\'acquisition', 'div');
+        $result->assertSeeElement('#field_acquisition_level');
+        $result->assertSee('Non expliqué', 'option');
+        $result->assertSee('Expliqué', 'option');
+        $result->assertSee('Exercé', 'option');
+        $result->assertSee('Autonome', 'option');
+        $result->assertSeeLink('Annuler');
+        $result->assertSeeInField('save', 'Enregistrer');
     }
 
     /**

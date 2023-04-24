@@ -1026,6 +1026,50 @@
     }
 
     /**
+     * Asserts that the save_objective page is loaded correctly when an administrator session user access is set (archived objective id is given)
+     */
+    public function testsave_objectiveWitAdministratorSessionUserAccessWithArchivedObjectiveId()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Insert a new archived objective into database
+        $operationalCompetenceId = 1;
+        $objectiveId = self::insertArchivedObjective($operationalCompetenceId);
+
+        // Execute save_objective method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('save_objective', $objectiveId);
+
+        // Delete inserted archived objective
+        \Plafor\Models\ObjectiveModel::getInstance()->delete($objectiveId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Modifier l\'objectif', 'h1');
+        $result->assertSeeElement('#objective_form');
+        $result->assertSee('Compétence opérationnelle liée à l\'objectif', 'label');
+        $result->assertSeeElement('#operational_competence');
+        $result->assertSee('Analyser, structurer et documenter les exigences ainsi que les besoins', 'option');
+        $result->assertSee('Symboles de l\'objectif', 'label');
+        $result->assertSeeElement('#objective_symbol');
+        $result->assertSeeInField('symbol', 'ZZZZZZZZZZ');
+        $result->assertSee('Taxonomie de l\'objectif', 'label');
+        $result->assertSeeElement('#objective_taxonomy');
+        $result->assertSeeInField('taxonomy', '99999');
+        $result->assertSee('Nom de l\'objectif', 'label');
+        $result->assertSeeElement('#objective_name');
+        $result->assertSeeInField('name', 'Objective Unit Test');
+        $result->assertSeeLink('Annuler');
+        $result->assertSeeLink('Réactiver');
+        $result->assertSeeInField('save', 'Enregistrer');
+    }
+
+    /**
      * Asserts that the delete_objective page redirects to the 403 error view when an apprentice session user access is set
      */
     public function testdelete_objectiveWithApprenticeSessionUserAccess()
@@ -1096,6 +1140,38 @@
         $result->assertSee('Toutes les informations concernant cet objectif (symbole, taxonomie, nom) seront désactivées.', 'div');
         $result->assertSeeLink('Annuler');
         $result->assertSeeLink('Désactiver');
+    }
+
+    /**
+     * Asserts that the delete_objective page is loaded correctly when an administrator session user access is set for an archived objective
+     */
+    public function testdelete_objectiveWitAdministratorSessionUserAccessForAnArchivedObjective()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Insert a new archived objective into database
+        $operationalCompetenceId = 1;
+        $objectiveId = self::insertArchivedObjective($operationalCompetenceId);
+
+        // Execute delete_objective method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_objective', $objectiveId);
+
+        // Delete inserted archived objective
+        \Plafor\Models\ObjectiveModel::getInstance()->delete($objectiveId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Objectif \'Objective Unit Test\'', 'h1');
+        $result->assertSee('Que souhaitez-vous faire ?', 'h4');
+        $result->assertSee('Toutes les informations concernant cet objectif (symbole, taxonomie, nom) seront réactivées.', 'div');
+        $result->assertSeeLink('Annuler');
+        $result->assertSeeLink('Réactiver');
     }
 
     /**
@@ -1254,6 +1330,9 @@
      */
     public function testview_course_planWithCoursePlanId()
     {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
         // Execute view_course_plan method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
         ->execute('view_course_plan', 1);
@@ -1268,6 +1347,7 @@
         $result->assertSee(' Informaticien/-ne CFC Développement d\'applications', 'p');
         $result->assertSee('No 88601, entré en vigueur le 01.08.2014', 'p');
         $result->assertSee('Domaines de compétences liés', 'p');
+        $result->assertSeeLink('Nouveau');
         $result->assertSee('Symbole', 'span');
         $result->assertSee('Domaine de compétence', 'span');
         $result->assertSeeLink('A');
@@ -1676,28 +1756,18 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
 
         // Inserts a new course plan into database
-        $formationNumber = 12345;
-        $officialName = 'Course Plan Unit Test';
-        $dateBegin = '2023-04-05';
-
-        $coursePlan = array(
-            'formation_number' => $formationNumber,
-            'official_name' => $officialName,
-            'date_begin' => $dateBegin
-        );
-
-        $coursePlanId = \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
+        $coursePlanId = self::insertCoursePlan();
 
         // Prepare the POST request (to update the inserted course plan)
         $_SERVER['REQUEST_METHOD'] = 'post';
         $_POST['coursePlanId'] = $coursePlanId;
         $_REQUEST['coursePlanId'] = $coursePlanId;
-        $_POST['formation_number'] = $formationNumber;
-        $_REQUEST['formation_number'] = $formationNumber;
+        $_POST['formation_number'] = 12345;
+        $_REQUEST['formation_number'] = 12345;
         $_POST['official_name'] = 'Course Plan Update Unit Test';
         $_REQUEST['official_name'] = 'Course Plan Update Unit Test';
-        $_POST['date_begin'] = $dateBegin;
-        $_REQUEST['date_begin'] = $dateBegin;
+        $_POST['date_begin'] = '2023-04-05';
+        $_REQUEST['date_begin'] = '2023-04-05';
         $_POST['id'] = $coursePlanId;
         $_REQUEST['id'] = $coursePlanId;
 
@@ -1819,27 +1889,17 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
 
         // Insert a new competence domnain
-        $symbol = 'ZZZZZZZZZZ';
-        $name = 'Competence Domain Unit Test';
         $coursePlanId = 1;
-
-        $competenceDomain = array(
-            'symbol' => $symbol,
-            'name' => $name,
-            'fk_course_plan' => $coursePlanId,
-            'id' => 0
-        );
-
-        $competenceDomainId = \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
+        $competenceDomainId = self::insertCompetenceDomain($coursePlanId);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
         $_POST['id'] = 0;
         $_REQUEST['id'] = 0;
-        $_POST['symbol'] = $symbol;
-        $_REQUEST['symbol'] = $symbol;
-        $_POST['name'] = $name;
-        $_REQUEST['name'] = $name;
+        $_POST['symbol'] = 'ZZZZZZZZZZ';
+        $_REQUEST['symbol'] = 'ZZZZZZZZZZ';
+        $_POST['name'] = 'Competence Domain Unit Test';
+        $_REQUEST['name'] = 'Competence Domain Unit Test';
         $_POST['course_plan'] = $coursePlanId;
         $_REQUEST['course_plan'] = $coursePlanId;
         
@@ -1883,25 +1943,15 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
 
         // Insert a new competence domnain
-        $symbol = 'ZZZZZZZZZZ';
-        $name = 'Competence Domain Unit Test';
         $coursePlanId = 1;
-
-        $competenceDomain = array(
-            'symbol' => $symbol,
-            'name' => $name,
-            'fk_course_plan' => $coursePlanId,
-            'id' => 0
-        );
-
-        $competenceDomainId = \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
+        $competenceDomainId = self::insertCompetenceDomain($coursePlanId);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
         $_POST['id'] = $competenceDomainId;
         $_REQUEST['id'] = $competenceDomainId;
-        $_POST['symbol'] = $symbol;
-        $_REQUEST['symbol'] = $symbol;
+        $_POST['symbol'] = 'ZZZZZZZZZZ';
+        $_REQUEST['symbol'] = 'ZZZZZZZZZZ';
         $_POST['name'] = 'Competence Domain Update Unit Test';
         $_REQUEST['name'] = 'Competence Domain Update Unit Test';
         $_POST['course_plan'] = $coursePlanId;
@@ -2042,31 +2092,15 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
 
         // Insert a new operational competence
-        $symbol = 'ZZZZZZZZZZ';
-        $name = 'Operational Competence Unit Test';
-        $methodologic = 'Operational Competence Unit Test';
-        $social = 'Operational Competence Unit Test';
-        $personal = 'Operational Competence Unit Test';
         $competenceDomainId = 1;
-
-        $operationalCompetence = array(
-            'id' => 0,
-            'symbol' => $symbol,
-            'name' => $name,
-            'methodologic' => $methodologic,
-            'social' => $social,
-            'personal' => $personal,
-            'fk_competence_domain' => $competenceDomainId
-        );
-
-        $operationalCompetenceId = \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
+        $operationalCompetenceId = self::insertOperationalCompetence($competenceDomainId);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
         $_POST['id'] = $operationalCompetenceId;
         $_REQUEST['id'] = $operationalCompetenceId;
-        $_POST['symbol'] = $symbol;
-        $_REQUEST['symbol'] = $symbol;
+        $_POST['symbol'] = 'ZZZZZZZZZZ';
+        $_REQUEST['symbol'] = 'ZZZZZZZZZZ';
         $_POST['name'] = 'Operational Competence Update Unit Test';
         $_REQUEST['name'] = 'Operational Competence Update Unit Test';
         $_POST['methodologic'] = 'Operational Competence Update Unit Test';
@@ -2208,30 +2242,19 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
 
         // Insert a new objective into database
-        $symbol = 'ZZZZZZZZZZ';
-        $name = 'Objective Unit Test';
-        $taxonomy = 99999;
         $operationalCompetenceId = 1;
-
-        $objective = array(
-            'symbol' => $symbol,
-            'taxonomy' => $taxonomy,
-            'name' => $name,
-            'fk_operational_competence' => $operationalCompetenceId
-        );
-
-        $objectiveId = \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+        $objectiveId = self::insertObjective($operationalCompetenceId);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
         $_POST['id'] = $objectiveId;
         $_REQUEST['id'] = $objectiveId;
-        $_POST['symbol'] = $symbol;
-        $_REQUEST['symbol'] = $symbol;
+        $_POST['symbol'] = 'ZZZZZZZZZZ';
+        $_REQUEST['symbol'] = 'ZZZZZZZZZZ';
         $_POST['name'] = 'Objective Update Unit Test';
         $_REQUEST['name'] = 'Objective Update Unit Test';
-        $_POST['taxonomy'] = $taxonomy;
-        $_REQUEST['taxonomy'] = $taxonomy;
+        $_POST['taxonomy'] = 99999;
+        $_REQUEST['taxonomy'] = 99999;
         $_POST['operational_competence'] = $operationalCompetenceId;
         $_REQUEST['operational_competence'] = $operationalCompetenceId;
         
@@ -2264,19 +2287,8 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
 
         // Insert a new objective into database
-        $symbol = 'ZZZZZZZZZZ';
-        $name = 'Objective Unit Test';
-        $taxonomy = 99999;
         $operationalCompetenceId = 1;
-
-        $objective = array(
-            'symbol' => $symbol,
-            'taxonomy' => $taxonomy,
-            'name' => $name,
-            'fk_operational_competence' => $operationalCompetenceId
-        );
-
-        $objectiveId = \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+        $objectiveId = self::insertObjective($operationalCompetenceId);
 
         // Execute delete_objective method of CoursePlan class (to delete the inserted objective)
         $result = $this->controller(CoursePlan::class)
@@ -2300,24 +2312,8 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
 
         // Insert a new operational competence
-        $symbol = 'ZZZZZZZZZZ';
-        $name = 'Operational Competence Unit Test';
-        $methodologic = 'Operational Competence Unit Test';
-        $social = 'Operational Competence Unit Test';
-        $personal = 'Operational Competence Unit Test';
         $competenceDomainId = 1;
-
-        $operationalCompetence = array(
-            'id' => 0,
-            'symbol' => $symbol,
-            'name' => $name,
-            'methodologic' => $methodologic,
-            'social' => $social,
-            'personal' => $personal,
-            'fk_competence_domain' => $competenceDomainId
-        );
-
-        $operationalCompetenceId = \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
+        $operationalCompetenceId = self::insertOperationalCompetence($competenceDomainId);
 
         // Execute delete_operational_competence method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
@@ -2345,38 +2341,13 @@
 
         // Insert a new competence domain
         $coursePlanId = 1;
-
-        $competenceDomain = array(
-            'symbol' => 'ZZZZZZZZZZ',
-            'name' => 'Competence Domain Unit Test',
-            'fk_course_plan' => $coursePlanId,
-            'id' => 0
-        );
-
-        $competenceDomainId = \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
+        $competenceDomainId = self::insertCompetenceDomain($coursePlanId);
         
         // Insert a new operational competence linked to the inserted competence domain
-        $operationalCompetence = array(
-            'id' => 0,
-            'symbol' => 'ZZZZZZZZZZ',
-            'name' => 'Operational Competence Unit Test',
-            'methodologic' => 'Operational Competence Unit Test',
-            'social' => 'Operational Competence Unit Test',
-            'personal' => 'Operational Competence Unit Test',
-            'fk_competence_domain' => $competenceDomainId
-        );
-
-        $operationalCompetenceId = \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
+        $operationalCompetenceId = self::insertOperationalCompetence($competenceDomainId);
         
         // Insert a new objective linked to the inserted operational competence
-        $objective = array(
-            'symbol' => 'ZZZZZZZZZZ',
-            'taxonomy' => 99999,
-            'name' => 'Objective Unit Test',
-            'fk_operational_competence' => $operationalCompetenceId
-        );
-
-        $objectiveId = \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+        $objectiveId = self::insertObjective($operationalCompetenceId);
 
         // Execute delete_competence_domain method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
@@ -2409,46 +2380,16 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
 
         // Insert a new course plan
-        $coursePlan = array(
-            'formation_number' => 12345,
-            'official_name' => 'Course Plan Unit Test',
-            'date_begin' => '2023-04-05'
-        );
-
-        $coursePlanId = \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
+        $coursePlanId = self::insertCoursePlan();
 
         // Insert a new competence domain
-        $competenceDomain = array(
-            'symbol' => 'ZZZZZZZZZZ',
-            'name' => 'Competence Domain Unit Test',
-            'fk_course_plan' => $coursePlanId,
-            'id' => 0
-        );
-
-        $competenceDomainId = \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
+        $competenceDomainId = self::insertCompetenceDomain($coursePlanId);
         
         // Insert a new operational competence linked to the inserted competence domain
-        $operationalCompetence = array(
-            'id' => 0,
-            'symbol' => 'ZZZZZZZZZZ',
-            'name' => 'Operational Competence Unit Test',
-            'methodologic' => 'Operational Competence Unit Test',
-            'social' => 'Operational Competence Unit Test',
-            'personal' => 'Operational Competence Unit Test',
-            'fk_competence_domain' => $competenceDomainId
-        );
-
-        $operationalCompetenceId = \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
+        $operationalCompetenceId = self::insertOperationalCompetence($competenceDomainId);
         
         // Insert a new objective linked to the inserted operational competence
-        $objective = array(
-            'symbol' => 'ZZZZZZZZZZ',
-            'taxonomy' => 99999,
-            'name' => 'Objective Unit Test',
-            'fk_operational_competence' => $operationalCompetenceId
-        );
-
-        $objectiveId = \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+        $objectiveId = self::insertObjective($operationalCompetenceId);
 
         // Execute delete_course_plan method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
@@ -2484,66 +2425,22 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
 
         // Insert a new course plan
-        $coursePlan = array(
-            'formation_number' => 12345,
-            'official_name' => 'Course Plan Unit Test',
-            'date_begin' => '2023-04-05'
-        );
-
-        $coursePlanId = \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
+        $coursePlanId = self::insertCoursePlan();
 
         // Insert a new competence domain
-        $competenceDomain = array(
-            'symbol' => 'ZZZZZZZZZZ',
-            'name' => 'Competence Domain Unit Test',
-            'fk_course_plan' => $coursePlanId,
-            'id' => 0
-        );
-
-        $competenceDomainId = \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
+        $competenceDomainId = self::insertCompetenceDomain($coursePlanId);
         
         // Insert a new operational competence linked to the inserted competence domain
-        $operationalCompetence = array(
-            'id' => 0,
-            'symbol' => 'ZZZZZZZZZZ',
-            'name' => 'Operational Competence Unit Test',
-            'methodologic' => 'Operational Competence Unit Test',
-            'social' => 'Operational Competence Unit Test',
-            'personal' => 'Operational Competence Unit Test',
-            'fk_competence_domain' => $competenceDomainId
-        );
-
-        $operationalCompetenceId = \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
+        $operationalCompetenceId = self::insertOperationalCompetence($competenceDomainId);
         
         // Insert a new objective linked to the inserted operational competence
-        $objective = array(
-            'symbol' => 'ZZZZZZZZZZ',
-            'taxonomy' => 99999,
-            'name' => 'Objective Unit Test',
-            'fk_operational_competence' => $operationalCompetenceId
-        );
-
-        $objectiveId = \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+        $objectiveId = self::insertObjective($operationalCompetenceId);
 
         // Insert a new user course
-        $userCourse = array(
-            'fk_user' => 4,
-            'fk_course_plan' => $coursePlanId,
-            'fk_status' => 1,
-            'date_begin' => '2023-04-19',
-            'date_end' => '0000-00-00',
-        );
-
-        $userCourseId = \Plafor\Models\UserCourseModel::getInstance()->insert($userCourse);
+        $userCourseId = self::insertUserCourse($coursePlanId);
 
         // Insert a new acquisition status linked to the inserted objective and to the inserted user course
-        $acquisitionStatus = array(
-            'fk_objective' => $objectiveId,
-            'fk_user_course' => $userCourseId,
-            'fk_acquisition_level' => 1
-        );
-
-        \Plafor\Models\AcquisitionStatusModel::getInstance()->insert($acquisitionStatus);
+        $acquisitionStatusId = self::insertAcquisitionStatus($objectiveId, $userCourseId);
 
         // Execute delete_user_course method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
@@ -2568,5 +2465,106 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('plafor/apprentice/list_apprentice'));
+    }
+
+    /**
+     * Insert a course plan into database
+     */
+    private static function insertCoursePlan() {
+        $coursePlan = array(
+            'formation_number' => 12345,
+            'official_name' => 'Course Plan Unit Test',
+            'date_begin' => '2023-04-05'
+        );
+
+        return \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
+    }
+
+    /**
+     * Insert a competence domain linked to a course plan into database
+     */
+    private static function insertCompetenceDomain($coursePlanId) {
+        $competenceDomain = array(
+            'symbol' => 'ZZZZZZZZZZ',
+            'name' => 'Competence Domain Unit Test',
+            'fk_course_plan' => $coursePlanId,
+            'id' => 0
+        );
+
+        return \Plafor\Models\CompetenceDomainModel::getInstance()->insert($competenceDomain);
+    }
+
+    /**
+     * Insert an operational competence linked to a competence domain into database
+     */
+    private static function insertOperationalCompetence($competenceDomainId) {
+        $operationalCompetence = array(
+            'id' => 0,
+            'symbol' => 'ZZZZZZZZZZ',
+            'name' => 'Operational Competence Unit Test',
+            'methodologic' => 'Operational Competence Unit Test',
+            'social' => 'Operational Competence Unit Test',
+            'personal' => 'Operational Competence Unit Test',
+            'fk_competence_domain' => $competenceDomainId
+        );
+
+        return \Plafor\Models\OperationalCompetenceModel::getInstance()->insert($operationalCompetence);
+    }
+
+    /**
+     * Insert an objective linked to an operational competence into database
+     */
+    private static function insertObjective($operationalCompetenceId) {
+        $objective = array(
+            'symbol' => 'ZZZZZZZZZZ',
+            'taxonomy' => 99999,
+            'name' => 'Objective Unit Test',
+            'fk_operational_competence' => $operationalCompetenceId
+        );
+
+        return \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+    }
+
+    /**
+     * Insert an archived objective linked to an operational competence into database
+     */
+    private static function insertArchivedObjective($operationalCompetenceId) {
+        $objective = array(
+            'symbol' => 'ZZZZZZZZZZ',
+            'taxonomy' => 99999,
+            'name' => 'Objective Unit Test',
+            'archive' => '2023-04-24',
+            'fk_operational_competence' => $operationalCompetenceId
+        );
+
+        return \Plafor\Models\ObjectiveModel::getInstance()->insert($objective);
+    }
+
+    /**
+     * Insert an user course linked to a course plan into database
+     */
+    private static function insertUserCourse($coursePlanId) {
+        $userCourse = array(
+            'fk_user' => 4,
+            'fk_course_plan' => $coursePlanId,
+            'fk_status' => 1,
+            'date_begin' => '2023-04-19',
+            'date_end' => '0000-00-00',
+        );
+
+        return \Plafor\Models\UserCourseModel::getInstance()->insert($userCourse);
+    }
+
+    /**
+     * Insert an acquisition status linked to an objective and an user course into database
+     */
+    private static function insertAcquisitionStatus($objectiveId, $userCourseId) {
+        $acquisitionStatus = array(
+            'fk_objective' => $objectiveId,
+            'fk_user_course' => $userCourseId,
+            'fk_acquisition_level' => 1
+        );
+
+        return \Plafor\Models\AcquisitionStatusModel::getInstance()->insert($acquisitionStatus);
     }
 }
