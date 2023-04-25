@@ -112,14 +112,7 @@
         $userType = self::APPRENTICE_USER_TYPE;
         $username = 'ApprenticeUnitTest';
         $userPassword = 'ApprenticeUnitTestPassword';
-        
-        $user = array(
-            'fk_user_type' => $userType,
-            'username' => $username,
-            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $user_id = \User\Models\User_model::getInstance()->insert($user);
+        $userId = self::insertUser($userType, $username, NULL, $userPassword);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
@@ -135,14 +128,14 @@
             ->execute('login');
 
         // Deletes inserted user 
-        \User\Models\User_model::getInstance()->delete($user_id, TRUE);
+        \User\Models\User_model::getInstance()->delete($userId, TRUE);
 
         // Reset $_POST and $_REQUEST variables
         $_POST = array();
         $_REQUEST = array();
 
         // Assertions
-        $this->assertEquals($_SESSION['user_id'], $user_id);
+        $this->assertEquals($_SESSION['user_id'], $userId);
         $this->assertEquals($_SESSION['username'], $username);
         $this->assertTrue($_SESSION['logged_in']);
     }
@@ -158,15 +151,7 @@
         $username = 'ApprenticeEmailUnitTest';
         $userEmail = 'apprenticeemailunittest@unittest.com';
         $userPassword = 'ApprenticeEmailUnitTestPassword';
-        
-        $user = array(
-            'fk_user_type' => $userType,
-            'username' => $username,
-            'email' => $userEmail,
-            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $user_id = \User\Models\User_model::getInstance()->insert($user);
+        $userId = self::insertUser($userType, $username, $userEmail, $userPassword);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
@@ -182,14 +167,14 @@
             ->execute('login');
 
         // Deletes inserted user 
-        \User\Models\User_model::getInstance()->delete($user_id, TRUE);
+        \User\Models\User_model::getInstance()->delete($userId, TRUE);
 
         // Reset $_POST and $_REQUEST variables
         $_POST = array();
         $_REQUEST = array();     
 
         // Assertions
-        $this->assertEquals($_SESSION['user_id'], $user_id);
+        $this->assertEquals($_SESSION['user_id'], $userId);
         $this->assertEquals($_SESSION['username'], $username);
         $this->assertTrue($_SESSION['logged_in']);
     }
@@ -272,13 +257,7 @@
         $username = 'ApprenticeUnitTest';
         $userPassword = 'ApprenticeUnitTestPassword';
         
-        $user = array(
-            'fk_user_type' => $userType,
-            'username' => $username,
-            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $user_id = \User\Models\User_model::getInstance()->insert($user);
+        $userId = self::insertUser($userType, $username, NULL, $userPassword);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
@@ -294,14 +273,14 @@
         // Initialize the session
         $_SESSION['logged_in'] = true;
         $_SESSION["username"] = $username;
-        $_SESSION['user_id'] = $user_id;
+        $_SESSION['user_id'] = $userId;
 
         // Execute change_password method of Auth class
         $result = $this->controller(Auth::class)
             ->execute('change_password');
 
         // Deletes inserted user
-        \User\Models\User_model::getInstance()->delete($user_id, TRUE);
+        \User\Models\User_model::getInstance()->delete($userId, TRUE);
 
         // Reset $_POST and $_REQUEST variables
         $_POST = array();
@@ -333,5 +312,19 @@
 
         // Assertion
         $this->assertEmpty($_SESSION);
+    }
+
+    /**
+     * Insert a new user into database
+     */
+    private static function insertUser($userType, $username, $userEmail, $userPassword) {
+        $user = array(
+            'fk_user_type' => $userType,
+            'username' => $username,
+            'email' => $userEmail,
+            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        return \User\Models\User_model::getInstance()->insert($user);
     }
 }

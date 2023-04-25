@@ -279,14 +279,7 @@
         $userType = self::APPRENTICE_USER_TYPE;
         $username = 'ApprenticeUnitTest';
         $userPassword = 'ApprenticeUnitTestPassword';
-        
-        $user = array(
-            'fk_user_type' => $userType,
-            'username' => $username,
-            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $userId = \User\Models\User_model::getInstance()->insert($user);
+        $userId = self::insertUser($userType, $username, NULL, $userPassword);
 
         // Execute delete_user method of Admin class (delete action parameter is passed)
         $result = $this->controller(Admin::class)
@@ -517,14 +510,7 @@
         $username = 'ApprenticeChangePasswordUnitTest';
         $userPassword = 'ApprenticeUnitTestPassword';
         $userNewPassword = 'ApprenticeUnitTestNewPassword';
-        
-        $user = array(
-            'fk_user_type' => $userType,
-            'username' => $username,
-            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $userId = \User\Models\User_model::getInstance()->insert($user);
+        $userId = self::insertUser($userType, $username, NULL, $userPassword);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
@@ -615,15 +601,8 @@
         // Inserts user into database
         $userType = self::APPRENTICE_USER_TYPE;
         $username = 'SaveUserUnitTest';
-        $userPassword = 'UnitTestPassword';
-        
-        $user = array(
-            'fk_user_type' => $userType,
-            'username' => $username,
-            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
-        );
-
-        $userId = \User\Models\User_model::getInstance()->insert($user);
+        $userPassword = 'UnitTestPassword';        
+        $userId = self::insertUser($userType, $username, NULL, $userPassword);
         
         // Prepare the POST request to update this user
         $_SERVER['REQUEST_METHOD'] = 'post';
@@ -659,5 +638,19 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('/user/admin/list_user'));
+    }
+
+    /**
+     * Insert a new user into database
+     */
+    private static function insertUser($userType, $username, $userEmail, $userPassword) {
+        $user = array(
+            'fk_user_type' => $userType,
+            'username' => $username,
+            'email' => $userEmail,
+            'password' => password_hash($userPassword, config('\User\Config\UserConfig')->password_hash_algorithm),
+        );
+
+        return \User\Models\User_model::getInstance()->insert($user);
     }
 }
