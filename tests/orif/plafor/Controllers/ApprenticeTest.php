@@ -431,6 +431,62 @@
     }
 
     /**
+     * Asserts that the save_user_course page redirects to the view_apprentice view when an apprentice id is given (updating an existing user course)
+     */
+    public function testsave_user_coursePostedWithTrainerSessionWithApprenticeIdAndExistingUserCourse()
+    {
+        $userId = 4;
+
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+
+        // Insert a new course plan
+        $coursePlanId = self::insertCoursePlan();
+
+        // Insert a new user course linked to the inserted course plan
+        $userCourseId = self::insertUserCourse($userId, $coursePlanId);
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['course_plan'] = $coursePlanId;
+        $_REQUEST['course_plan'] = $coursePlanId;
+        $_POST['status'] = 2;
+        $_REQUEST['status'] = 2;
+        $_POST['date_begin'] = '2023-04-05';
+        $_REQUEST['date_begin'] = '2023-04-05';
+        $_POST['date_end'] = '0000-00-00';
+        $_REQUEST['date_end'] = '0000-00-00';
+
+        // Execute save_user_course method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('save_user_course', $userId, $userCourseId);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+        
+        // Get user course from database
+        $userCourseDb = \Plafor\Models\UserCourseModel::getInstance()->where("fk_user ", $userId)->where("fk_course_plan", $coursePlanId)->first();
+
+        // Delete acquisition statuses linked to the inserted user course
+        \Plafor\Models\AcquisitionStatusModel::getInstance()->where('fk_user_course', $userCourseDb['id'])->delete();
+
+        // Delete inserted user course        
+        \Plafor\Models\UserCourseModel::getInstance()->delete($userCourseDb['id'], TRUE);
+
+        // Delete inserted course plan
+        \Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanId, TRUE);
+
+        // Assertions
+         $response = $result->response();
+         $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+         $this->assertEmpty($response->getBody());
+         $result->assertOK();
+         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+         $result->assertRedirectTo(base_url('plafor/apprentice/view_apprentice/' . $userId));
+    }
+
+    /**
      * Asserts that the save_apprentice_link page redirects to the base url when an apprentice session is set
      */
     public function testsave_apprentice_linkWithApprenticeSession()
@@ -1170,7 +1226,7 @@
     /**
      * Asserts that the add_comment page redirects to the view_acquisition_status view when a status id is provided for a trainer session (inserting a new comment)
      */
-    public function testadd_commenPostedtWithStatusIdWithTrainerSession()
+    public function testadd_commentPostedtWithStatusIdWithTrainerSession()
     {
         // Initialize session
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
@@ -1240,7 +1296,7 @@
     /**
      * Asserts that the add_comment page redirects to the view_acquisition_status view when a status id is provided for a trainer session (updating an existing comment)
      */
-    public function testadd_commenPostedtWithStatusIdWithTrainerSessionAndExistingComment()
+    public function testadd_commentPostedtWithStatusIdWithTrainerSessionAndExistingComment()
     {
         // Initialize session
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
