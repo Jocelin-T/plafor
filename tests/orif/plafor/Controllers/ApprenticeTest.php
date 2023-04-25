@@ -577,7 +577,7 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
 
         // Insert new apprentice user       
-        $apprenticeId = self::insertApprentice();
+        $apprenticeId = self::insertApprentice('ApprenticeUnitTest');
 
         // Insert new trainer user
         $trainerId = self::insertTrainer('TrainerUnitTest');
@@ -627,7 +627,7 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
 
         // Insert new apprentice user       
-        $apprenticeId = self::insertApprentice();
+        $apprenticeId = self::insertApprentice('ApprenticeUnitTest');
 
         // Insert new trainer user
         $trainerId = self::insertTrainer('TrainerUnitTest');
@@ -775,7 +775,7 @@
         $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
 
         // Insert new apprentice user       
-        $apprenticeId = self::insertApprentice();
+        $apprenticeId = self::insertApprentice('ApprenticeUnitTest');
 
         // Insert new trainer user
         $trainerId = self::insertTrainer('TrainerUnitTest');
@@ -918,7 +918,7 @@
 
         // Insert a new comment
         $acquisitionStatusId = 1;
-        $commentId = self::insertComment($acquisitionStatusId);
+        $commentId = self::insertComment(2, $acquisitionStatusId);
 
         // Execute view_acquisition_status method of Apprentice class
         $result = $this->controller(Apprentice::class)
@@ -1189,7 +1189,7 @@
         $objectiveId = self::insertObjective($operationalCompetenceId);
 
         // Insert a new user course linked to the inserted course plan
-        $userCourseId = self::insertUserCourse($coursePlanId);
+        $userCourseId = self::insertUserCourse(4, $coursePlanId);
 
         // Insert a new acquisition status linked to the inserted objective and to the inserted user course
         $acquisitionStatusId = self::insertAcquisitionStatus($objectiveId, $userCourseId);
@@ -1259,13 +1259,13 @@
         $objectiveId = self::insertObjective($operationalCompetenceId);
 
         // Insert a new user course linked to the inserted course plan
-        $userCourseId = self::insertUserCourse($coursePlanId);
+        $userCourseId = self::insertUserCourse(4, $coursePlanId);
 
         // Insert a new acquisition status linked to the inserted objective and to the inserted user course
         $acquisitionStatusId = self::insertAcquisitionStatus($objectiveId, $userCourseId);
 
         // Insert a new comment linked to the inserted acquisition status
-        $commentId = self::insertComment($acquisitionStatusId);
+        $commentId = self::insertComment(2, $acquisitionStatusId);
 
         // Prepare the POST request
         $_SERVER['REQUEST_METHOD'] = 'post';
@@ -1718,7 +1718,7 @@
     }
 
     /**
-     * Asserts that the delete_user redirects to the list_user view (when the action is equals 1)
+     * Asserts that the delete_user redirects to the list_user view (when the action equals 1)
      * The user won't be disabled because the user_id is equal to the session user id
      */
     public function testdelete_userWithDisableActionForSameUserId()
@@ -1741,7 +1741,7 @@
     }
 
     /**
-     * Asserts that the delete_user redirects to the list_user view (when the action is equals 1)
+     * Asserts that the delete_user redirects to the list_user view (when the action equals 1)
      */
     public function testdelete_userWithDisableAction()
     {
@@ -1768,7 +1768,7 @@
     }
 
     /**
-     * Asserts that the delete_user redirects to the list_user view (when the action is equals 2)
+     * Asserts that the delete_user redirects to the list_user view (when the action equals 2)
      * The user won't be deleted because the user_id is equal to the session user id
      */
     public function testdelete_userWithDeleteActionForSameUserId()
@@ -1780,6 +1780,72 @@
         // Execute delete_user method of Apprentice class
         $result = $this->controller(Apprentice::class)
         ->execute('delete_user', 1, 2);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\RedirectResponse::class, $response);
+        $this->assertEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertRedirectTo(base_url('/user/admin/list_user'));
+    }
+
+    /**
+     * Asserts that the delete_user redirects to the list_user view (when the action equals 2)
+     */
+    public function testdelete_userWithDeleteAction() {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+        $_SESSION['user_id'] = 1;
+
+        // Insert new apprentice user       
+        $apprenticeId = self::insertApprentice('ApprenticeUnitTest');
+
+        // Insert new trainer user
+        $trainerId = self::insertTrainer('TrainerUnitTest');
+
+        // Insert apprentice link 
+        $apprenticeLinkId = self::insertTrainerApprenticeLink($trainerId, $apprenticeId);
+
+        // Insert a new course plan
+        $coursePlanId = self::insertCoursePlan();
+
+        // Insert a new competence domain linked to the inserted course plan
+        $competenceDomainId = self::insertCompetenceDomain($coursePlanId);
+        
+        // Insert a new operational competence linked to the inserted competence domain
+        $operationalCompetenceId = self::insertOperationalCompetence($competenceDomainId);
+        
+        // Insert a new objective linked to the inserted operational competence
+        $objectiveId = self::insertObjective($operationalCompetenceId); 
+
+        // Insert a new user course linked to the inserted course plan
+        $userCourseId = self::insertUserCourse($apprenticeId, $coursePlanId);
+
+        // Insert a new acquisition status linked to the inserted objective and to the inserted user course
+        $acquisitionStatusId = self::insertAcquisitionStatus($objectiveId, $userCourseId);
+
+        // Insert a new comment linked to the acquisition status
+        $commentId = self::insertComment($trainerId, $acquisitionStatusId);
+
+        // Execute delete_user method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('delete_user', $apprenticeId, 2);
+
+        // Delete inserted objective
+        \Plafor\Models\ObjectiveModel::getInstance()->delete($objectiveId, TRUE);
+
+        // Delete inserted operational competence
+        \Plafor\Models\OperationalCompetenceModel::getInstance()->delete($operationalCompetenceId, TRUE);
+
+        // Delete inserted competence domain
+        \Plafor\Models\CompetenceDomainModel::getInstance()->delete($competenceDomainId, TRUE);
+
+        // Delete inserted course plan
+        \Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanId, TRUE);
+
+        // Delete inserted trainer user
+        \User\Models\User_model::getInstance()->delete($trainerId, TRUE);
 
         // Assertions
         $response = $result->response();
@@ -1868,9 +1934,9 @@
     /**
      * Insert an user course linked to a course plan into database
      */
-    private static function insertUserCourse($coursePlanId) {
+    private static function insertUserCourse($userId, $coursePlanId) {
         $userCourse = array(
-            'fk_user' => 4,
+            'fk_user' => $userId,
             'fk_course_plan' => $coursePlanId,
             'fk_status' => 1,
             'date_begin' => '2023-04-19',
@@ -1896,9 +1962,9 @@
     /**
      * Insert a comment linked to an acquisition status into database
      */
-    private static function insertComment($acquisitionStatusId) {
+    private static function insertComment($trainerId, $acquisitionStatusId) {
         $comment = array(
-            'fk_trainer' => 2,
+            'fk_trainer' => $trainerId,
             'fk_acquisition_status' => $acquisitionStatusId,
             'comment' => 'Comment Unit Test',
             'date_creation' => date('Y-m-d H:i:s'),
@@ -1922,10 +1988,10 @@
     /**
      * Insert an apprentice into database
      */
-    private static function insertApprentice() {
+    private static function insertApprentice($username) {
         $apprentice = array(
             'fk_user_type' => self::APPRENTICE_USER_TYPE,
-            'username' => 'ApprenticeUnitTest',
+            'username' => $username,
             'password' => password_hash('ApprenticeUnitTestPassword', config('\User\Config\UserConfig')->password_hash_algorithm),
         );
 
