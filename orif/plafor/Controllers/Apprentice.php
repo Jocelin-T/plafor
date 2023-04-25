@@ -600,15 +600,13 @@ class Apprentice extends \App\Controllers\BaseController
                         if (count(UserCourseModel::getUser($user['id']))>0){
                             foreach(UserCourseModel::getInstance()->where('fk_user',$user['id'])->findAll() as $userCourse){
                                 foreach(UserCourseModel::getAcquisitionStatus($userCourse['id']) as $acquisitionStatus){
-
-                                    foreach (CommentModel::getInstance()->where('fk_acquisition_status',$acquisitionStatus['id']) as $comment){
-                                        $comment==null?:CommentModel::getInstance()->delete($comment['id'],true);
+                                    foreach (CommentModel::getInstance()->where('fk_acquisition_status', $acquisitionStatus['id'])->findAll() as $comment) {
+                                        CommentModel::getInstance()->delete($comment['id'],true);
                                     }
                                     AcquisitionStatusModel::getInstance()->delete($acquisitionStatus['id'],true);
                                 }
                                 UserCourseModel::getInstance()->delete($userCourse['id'],true);
                             }
-
                         }
                         User_model::getInstance()->delete($user_id, TRUE);
                     }
