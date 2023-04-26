@@ -1403,6 +1403,9 @@
      */
     public function testview_competence_domainWithCompetenceDomainId()
     {
+        // Initialize session 
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
         // Execute view_competence_domain method of CoursePlan class
         $result = $this->controller(CoursePlan::class)
         ->execute('view_competence_domain', 1);

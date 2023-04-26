@@ -1294,6 +1294,73 @@
     }
 
     /**
+     * Asserts that the add_comment page redirects to the view_acquisition_status view when a status id is provided for a trainer session (inserting a new empty comment)
+     */
+    public function testadd_commentPostedtWithStatusIdWithTrainerSessionAndEmptyComment()
+    {
+        // Initialize session
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_trainer;
+        $_SESSION['user_id'] = 2;
+
+        // Insert a new course plan
+        $coursePlanId = self::insertCoursePlan();
+
+        // Insert a new competence domain linked to the inserted course plan
+        $competenceDomainId = self::insertCompetenceDomain($coursePlanId);
+        
+        // Insert a new operational competence linked to the inserted competence domain
+        $operationalCompetenceId = self::insertOperationalCompetence($competenceDomainId);
+        
+        // Insert a new objective linked to the inserted operational competence
+        $objectiveId = self::insertObjective($operationalCompetenceId);
+
+        // Insert a new user course linked to the inserted course plan
+        $userCourseId = self::insertUserCourse(4, $coursePlanId);
+
+        // Insert a new acquisition status linked to the inserted objective and to the inserted user course
+        $acquisitionStatusId = self::insertAcquisitionStatus($objectiveId, $userCourseId);
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['comment'] = '';
+        $_REQUEST['comment'] = '';
+
+        // Execute add_comment method of Apprentice class
+        $result = $this->controller(Apprentice::class)
+        ->execute('add_comment', $acquisitionStatusId);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Delete inserted acquisition status
+        \Plafor\Models\AcquisitionStatusModel::getInstance()->delete($acquisitionStatusId, TRUE);
+
+        // Delete inserted user course
+        \Plafor\Models\UserCourseModel::getInstance()->delete($userCourseId, TRUE);
+
+        // Delete inserted objective
+        \Plafor\Models\ObjectiveModel::getInstance()->delete($objectiveId, TRUE);
+
+        // Delete inserted operational competence
+        \Plafor\Models\OperationalCompetenceModel::getInstance()->delete($operationalCompetenceId, TRUE);
+
+        // Delete inserted competence domain
+        \Plafor\Models\CompetenceDomainModel::getInstance()->delete($competenceDomainId, TRUE);
+
+        // Delete inserted course plan
+        \Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Le champ Commentaire est requis.', 'div');
+    }
+
+    /**
      * Asserts that the add_comment page redirects to the view_acquisition_status view when a status id is provided for a trainer session (updating an existing comment)
      */
     public function testadd_commentPostedtWithStatusIdWithTrainerSessionAndExistingComment()
