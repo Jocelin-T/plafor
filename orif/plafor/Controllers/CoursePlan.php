@@ -57,9 +57,7 @@ class CoursePlan extends \App\Controllers\BaseController
                     );
                 }
             }
-            if ($this->request->getPost('coursePlanId')) {
-                $course_plan_id = $this->request->getPost('coursePlanId');
-            }
+
             $formTitle = $course_plan_id <> 0 ? 'update' : 'new';
             $output = array(
                 'title' => (lang('plafor_lang.title_course_plan_' . $formTitle)),
