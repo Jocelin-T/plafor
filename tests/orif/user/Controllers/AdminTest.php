@@ -184,7 +184,7 @@
     /**
      * Asserts that the delete_user page is loaded correctly for the user id 1 (with a session)
      */
-    public function testdelete_userWithSession() 
+    public function testdelete_userWithSessionAndDefaultAction() 
     {
         // Initialize session 
         $_SESSION['user_id'] = 2;
@@ -203,6 +203,35 @@
         $result->assertSeeLink('Annuler');
         $result->assertSeeLink('Désactiver cet utilisateur');
         $result->assertSeeLink('Supprimer cet utilisateur');
+    }
+
+    /**
+     * Asserts that the delete_user page is loaded correctly with a warning message
+     */
+    public function testdelete_userWithSessionAndDefaultActionForADisabledUser()
+    {
+        // Initialize the session
+        $_SESSION['user_id'] = 2;
+
+        $user_id = 1;
+
+        // Disable user id 1
+        \User\Models\User_model::getInstance()->update($user_id, ['archive' => '2023-04-25']);
+
+        // Execute delete_user method of Admin class (disable action parameter is passed)
+        $result = $this->controller(Admin::class)
+        ->execute('delete_user', $user_id);
+
+        // Enable user id 1
+        \User\Models\User_model::getInstance()->update($user_id, ['archive' => NULL]);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Cet utilisateur est déjà désactivé. Voulez-vous le supprimer définitivement ?', 'div');
     }
 
     /**
@@ -542,6 +571,47 @@
     }
 
     /**
+     * Asserts that the password_change_user page displays an error message
+     */
+    public function testpassword_change_userPostedWhenChangingPasswordWithError()
+    {
+        // Inserts user into database
+        $userType = self::APPRENTICE_USER_TYPE;
+        $username = 'ApprenticeChangePasswordUnitTest';
+        $userPassword = 'ApprenticeUnitTestPassword';
+        $userNewPassword = 'ApprenticeUnitTestNewPassword';
+        $userId = self::insertUser($userType, $username, NULL, $userPassword);
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = $userId;
+        $_REQUEST['id'] = $userId;
+        $_POST['user_password_new'] = $userNewPassword;
+        $_REQUEST['user_password_new'] = $userNewPassword;
+        $_POST['user_password_again'] = $userPassword;
+        $_REQUEST['user_password_again'] = $userPassword;
+
+        // Execute password_change_user method of Admin class
+        $result = $this->controller(Admin::class)
+        ->execute('password_change_user', $userId);
+
+        // Deletes inserted user
+        \User\Models\User_model::getInstance()->delete($userId, TRUE);
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Le champ Confirmer le mot de passe ne coïncide pas avec le champ Nouveau mot de passe.', 'li');        
+    }
+
+    /**
      * Asserts that the save_user page redirects to the list_user view after inserting a new user (POST)
      */
     public function testsave_userPostedForANewUser()
@@ -588,6 +658,48 @@
         $result->assertOK();
         $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
         $result->assertRedirectTo(base_url('/user/admin/list_user'));
+    }
+
+    /**
+     * Asserts that the save_user page is loaded correctly displaying an error message
+     */
+    public function testsave_userPostedForANewUserWithError()
+    {
+        $username = 'ApprenticeSaveUserUnitTest';
+
+        // Initialize session
+        $_SESSION['user_id'] = 1;
+
+        // Prepare the POST request
+        $_SERVER['REQUEST_METHOD'] = 'post';
+        $_POST['id'] = 0;
+        $_REQUEST['id'] = 0;
+        $_POST['user_name'] = $username;
+        $_REQUEST['user_name'] = $username;
+        $_POST['user_email'] = 'apprenticesaveuserunittest@test.com';
+        $_REQUEST['user_email'] = 'apprenticesaveuserunittest@test.com';
+        $_POST['user_usertype'] = self::APPRENTICE_USER_TYPE;
+        $_REQUEST['user_usertype'] = self::APPRENTICE_USER_TYPE;
+        $_POST['user_password'] = 'ApprenticeUnitTestPassword';
+        $_REQUEST['user_password'] = 'ApprenticeUnitTestPassword';
+        $_POST['user_password_again'] = 'ApprenticeUnitTestPasswordError';
+        $_REQUEST['user_password_again'] = 'ApprenticeUnitTestPasswordError';
+
+        // Execute save_user method of Admin class 
+        $result = $this->controller(Admin::class)
+        ->execute('save_user');
+
+        // Reset $_POST and $_REQUEST variables
+        $_POST = array();
+        $_REQUEST = array();
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Le champ Confirmer le mot de passe ne coïncide pas avec le champ Mot de passe', 'li');
     }
 
     /**
