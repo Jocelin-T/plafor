@@ -202,6 +202,44 @@
     }
 
     /**
+     * Asserts that the delete_course_plan page is loaded correctly (confirmation message) when an administrator session user access is set (with action equals 0) for an archived course plan
+     */
+    public function testdelete_course_planWithAdministratorSessionUserAccessAndActionToConfirmForAnArchivedCoursePlan()
+    {
+        // Initialize session
+        $_SESSION['_ci_previous_url'] = 'url'; // (needed for delete_course_plan view)
+        $_SESSION['user_access'] = config('\User\Config\UserConfig')->access_lvl_admin;
+
+        // Inserts a new archived course plan into database
+        $coursePlanId = self::insertArchivedCoursePlan();
+
+        // Insert a new user course
+        $userCourseId = self::insertUserCourse($coursePlanId);
+
+        // Execute delete_course_plan method of CoursePlan class
+        $result = $this->controller(CoursePlan::class)
+        ->execute('delete_course_plan', $coursePlanId, 0);
+
+        // Delete inserted user course
+        \Plafor\Models\UserCourseModel::getInstance()->delete($userCourseId, TRUE);
+
+        // Delete inserted archived course plan
+        \Plafor\Models\CoursePlanModel::getInstance()->delete($coursePlanId, TRUE);
+
+        // Assertions
+        $response = $result->response();
+        $this->assertInstanceOf(\CodeIgniter\HTTP\Response::class, $response);
+        $this->assertNotEmpty($response->getBody());
+        $result->assertOK();
+        $result->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $result->assertSee('Apprenti \'ApprentiDev\'', 'h1');
+        $result->assertSee('Plan de formation \'Course Plan Unit Test\'', 'h1');
+        $result->assertSee('Statut de la formation \'En cours\'', 'h1');
+        $result->assertSeeLink('Annuler');
+        $result->assertSeeLink('Réactiver');
+    }
+
+    /**
      * Asserts that the delete_course_plan page redirects to the list_course_plan view when an administrator session user access is set (with a fake action)
      */
     public function testdelete_course_planWithAdministratorSessionUserAccessAndFakeAction()
@@ -2482,6 +2520,20 @@
 
         return \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
     }
+
+    /**
+     * Insert an archived course plan into database
+     */
+    private static function insertArchivedCoursePlan() {
+        $coursePlan = array(
+            'formation_number' => 12345,
+            'official_name' => 'Course Plan Unit Test',
+            'date_begin' => '2023-04-05',
+            'archive' => '2023-04-26'
+        );
+
+        return \Plafor\Models\CoursePlanModel::getInstance()->insert($coursePlan);
+    } 
 
     /**
      * Insert a competence domain linked to a course plan into database
