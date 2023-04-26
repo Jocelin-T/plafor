@@ -23,7 +23,7 @@ It is based on the CodeIgniter 4.x framework.
 
 ### Unit Testing
 1. Download and install [Composer](https://getcomposer.org/download/)
-2. From the project root (the directory that contains the application and system directories) type the following from the command line: ``composer require --dev phpunit/phpunit``
+2. From the project root (the directory that contains the application and system directories) type the following from the command line: ``composer update``
 3. From the project root run unit tests typing the following from the command line : ``vendor\bin\phpunit``
 
 ## Code Coverage
